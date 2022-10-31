@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class InteractionHelper : ModuleRules
+public class InteractionFramework : ModuleRules
 {
-	public InteractionHelper(ReadOnlyTargetRules Target) : base(Target)
+	public InteractionFramework(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		

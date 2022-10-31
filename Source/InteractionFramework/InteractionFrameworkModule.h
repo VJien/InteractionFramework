@@ -4,11 +4,17 @@
 
 #include "Modules/ModuleManager.h"
 
-class FInteractionHelperModule : public IModuleInterface
+class FInteractionFrameworkModule : public IModuleInterface
 {
 public:
-
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+
+private:
+	void RegisterSettings();
+	void UnregisterSettings();
+	bool HandleSettingsSaved();
+
 };
