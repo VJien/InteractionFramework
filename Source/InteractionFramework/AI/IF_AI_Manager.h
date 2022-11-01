@@ -10,7 +10,20 @@
 class IIF_PoolItem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIF_AIEvent, TScriptInterface<IIF_PoolItem>, AI, FName, Group);
 
-
+USTRUCT()
+struct FPoolData
+{
+	GENERATED_BODY()
+	FPoolData()
+	{}
+	FPoolData(TScriptInterface<IIF_PoolItem> InPoolItem, bool bInIsClean):PoolItem(InPoolItem), bIsClean(bInIsClean)
+	{
+	}
+	UPROPERTY()
+	TScriptInterface<IIF_PoolItem> PoolItem = nullptr;
+	UPROPERTY()
+	bool bIsClean = true;
+};
 
 UCLASS()
 class INTERACTIONFRAMEWORK_API UIF_AI_Manager : public UTickableWorldSubsystem
@@ -25,23 +38,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterAI(TScriptInterface<IIF_PoolItem> AI, FName Group);
 	UFUNCTION(BlueprintCallable)
-	void RemoveAI(TScriptInterface<IIF_PoolItem> AI,  FName Group);
+	void ResetAI(TScriptInterface<IIF_PoolItem> AI,  FName Group);
+	UFUNCTION(BlueprintCallable)
+	void DeleteAI(TScriptInterface<IIF_PoolItem> AI,  FName Group);
+	UFUNCTION(BlueprintCallable)
+	void InitPool();
+
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TScriptInterface<IIF_PoolItem> RetrieveAI(TSubclassOf<AActor> Class);
+	TScriptInterface<IIF_PoolItem> RetrieveAI(TSubclassOf<ACharacter> Class);
 	
 
-	void AddPool(TSubclassOf<AActor> Class, int32 Num = 10);
+	TArray<FPoolData>* AddPool(TSubclassOf<ACharacter> Class, int32 Num = 10);
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FIF_AIEvent OnAI_Generate;
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
-	FIF_AIEvent OnAI_Removed;
+	FIF_AIEvent OnAI_Reset;
 	
 	
-	TMap<FName, TArray<TScriptInterface<IIF_PoolItem>>> GroupData;
+
 
 
 	int32 DefaultPoolNum = 10;
-	TMap<TSubclassOf<AActor>, TArray<TScriptInterface<IIF_PoolItem>>> AI_Pool;
+	TMap<TSubclassOf<AActor>, TArray<FPoolData>> Pool;
+	TMap<FName, TArray<FPoolData>> GroupData;
 };

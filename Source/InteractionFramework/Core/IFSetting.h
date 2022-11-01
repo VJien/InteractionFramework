@@ -22,5 +22,5 @@ public:
 	UPROPERTY(EditAnywhere, Category="Pool", Config)
 	int32 DefaultPoolNum = 10;
 	UPROPERTY(EditAnywhere, Category="Pool", Config)
-	TMap<TSubclassOf<ACharacter>, int32 > AIPoolData;
+	TMap<TSoftClassPtr<ACharacter>, int32 > AIPoolData;
 };

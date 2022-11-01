@@ -27,9 +27,10 @@ class INTERACTIONFRAMEWORK_API IIF_PoolItem
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void OnRegisterAI();
+	void OnRegister();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void OnRemoveAI();
-
+	void OnReset();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void MarkDelete();
 	
 };

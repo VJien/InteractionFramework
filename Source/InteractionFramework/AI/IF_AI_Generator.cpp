@@ -9,7 +9,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-
+PRAGMA_DISABLE_OPTIMIZATION
 // Sets default values
 AIF_AI_Generator::AIF_AI_Generator()
 {
@@ -43,7 +43,7 @@ void AIF_AI_Generator::OnAI_ActorDestroyed(AActor* DestroyedActor)
 		{
 			if (UIF_PoolItem* AIInterface = Cast<UIF_PoolItem>(DestroyedActor))
 			{
-				Manager->RemoveAI(AIInterface, Group);
+				Manager->DeleteAI(AIInterface, Group);
 			}
 		}
 	}
@@ -54,6 +54,10 @@ void AIF_AI_Generator::Run_Implementation()
 	if (AI_Class.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AI Generate Failed because of AI_Class.Num ==0"))
+		return;
+	}
+	if (!GetWorld() || !(GetWorld()->WorldType == EWorldType::Game || GetWorld()->WorldType == EWorldType::PIE))
+	{
 		return;
 	}
 	if (Manager.IsValid())
@@ -75,13 +79,28 @@ void AIF_AI_Generator::Run_Implementation()
 					for (auto i = 0; i < Num; i++)
 					{
 						auto AIClass = AI_Class[UKismetMathLibrary::RandomIntegerInRange(0, AI_Class.Num() - 1)];
-						if (auto AI = Manager->RetrieveAI(AIClass))
+						auto AI = Manager->RetrieveAI(AIClass);
+					if (IsValid(AI.GetObject()))
+					{
+						if (auto Actor = Cast<AActor>(AI.GetObject()))
 						{
-							if (auto Character = Cast<ACharacter>(AI.GetObject()))
+							Actor->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
+							FTransform GeneratePoint = GetActorTransform();
+							const int32 GenerateNum = MultiGeneratePoints.Num();
+							if (GenerateNum > 0)
 							{
-								Character->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
-								Character->GetCharacterMovement()->GravityScale = 1;
+								if (GenerateNum >= Num)
+								{
+									GeneratePoint = MultiGeneratePoints[Num];
+								}
+								else
+								{
+									GeneratePoint = MultiGeneratePoints[Num % GenerateNum];
+								}
+								
 							}
+							Actor->SetActorTransform(GeneratePoint);
+						}
 							Manager->RegisterAI(AI, Group);
 						}
 					}
@@ -92,12 +111,27 @@ void AIF_AI_Generator::Run_Implementation()
 				for (auto i = 0; i < Num; i++)
 				{
 					auto AIClass = AI_Class[UKismetMathLibrary::RandomIntegerInRange(0, AI_Class.Num() - 1)];
-					if (auto AI = Manager->RetrieveAI(AIClass))
+					auto AI = Manager->RetrieveAI(AIClass);
+					if (IsValid(AI.GetObject()))
 					{
-						if (auto Character = Cast<ACharacter>(AI.GetObject()))
+						if (auto Actor = Cast<AActor>(AI.GetObject()))
 						{
-							Character->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
-							Character->GetCharacterMovement()->GravityScale = 1;
+							Actor->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
+							FTransform GeneratePoint = GetActorTransform();
+							const int32 GeneratePointsNum = MultiGeneratePoints.Num();
+							if (GeneratePointsNum > 0)
+							{
+								if (GeneratePointsNum >= Num)
+								{
+									GeneratePoint = MultiGeneratePoints[Num];
+								}
+								else
+								{
+									GeneratePoint = MultiGeneratePoints[Num % GeneratePointsNum];
+								}
+								
+							}
+							Actor->SetActorTransform(GeneratePoint);
 						}
 						Manager->RegisterAI(AI, Group);
 					}
@@ -112,26 +146,28 @@ void AIF_AI_Generator::Run_Implementation()
 				GetWorldTimerManager().SetTimer(Handle, [=]()
 				{
 					auto AIClass = AI_Class[UKismetMathLibrary::RandomIntegerInRange(0, AI_Class.Num() - 1)];
-					if (auto AI = Manager->RetrieveAI(AIClass))
+					auto AI = Manager->RetrieveAI(AIClass);
+					if (IsValid(AI.GetObject()))
 					{
-						if (auto Character = Cast<ACharacter>(AI.GetObject()))
+						if (auto Actor = Cast<AActor>(AI.GetObject()))
 						{
-							Character->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
-							Character->GetCharacterMovement()->GravityScale = 1;
+							Actor->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
+							Actor->SetActorTransform(GetActorTransform());
 						}
 						Manager->RegisterAI(AI, Group);
-					}
+				}
 				}, GenerateDelay, false);
 			}
 			else
 			{
 				auto AIClass = AI_Class[UKismetMathLibrary::RandomIntegerInRange(0, AI_Class.Num() - 1)];
-				if (auto AI = Manager->RetrieveAI(AIClass))
+				auto AI = Manager->RetrieveAI(AIClass);
+				if (IsValid(AI.GetObject()))
 				{
-					if (auto Character = Cast<ACharacter>(AI.GetObject()))
+					if (auto Actor = Cast<AActor>(AI.GetObject()))
 					{
-						Character->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
-						Character->GetCharacterMovement()->GravityScale = 1;
+						Actor->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
+						Actor->SetActorTransform(GetActorTransform());
 					}
 					Manager->RegisterAI(AI, Group);
 				}
@@ -139,3 +175,4 @@ void AIF_AI_Generator::Run_Implementation()
 		}
 	}
 }
+PRAGMA_ENABLE_OPTIMIZATION
