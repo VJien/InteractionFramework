@@ -9,6 +9,8 @@
 
 class IIF_PoolItem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIF_AIEvent, TScriptInterface<IIF_PoolItem>, AI, FName, Group);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIF_AIEvent_NumberUpdate, TScriptInterface<IIF_PoolItem>, LastAI, int32, NewNumber);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FIF_AIEvent_GroupNumberUpdate, TScriptInterface<IIF_PoolItem>, LastAI, FName,Group,int32, NewNumber);
 
 USTRUCT()
 struct FPoolData
@@ -25,7 +27,7 @@ struct FPoolData
 	bool bIsClean = true;
 };
 
-UCLASS()
+UCLASS(DisplayName="AI Manager")
 class INTERACTIONFRAMEWORK_API UIF_AI_Manager : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
@@ -46,6 +48,21 @@ public:
 
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActiveAI_Number();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActiveAI_NumberByGroup(FName Group);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActiveAI_NumberByClass(TSubclassOf<ACharacter> Class);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActiveAI(TArray<TScriptInterface<IIF_PoolItem>>& AI);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActiveAI_ByGroup(FName Group,TArray<TScriptInterface<IIF_PoolItem>>& AI);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActiveAI_ByClass(TSubclassOf<ACharacter> Class, TArray<TScriptInterface<IIF_PoolItem>>& AI);
+	
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TScriptInterface<IIF_PoolItem> RetrieveAI(TSubclassOf<ACharacter> Class);
 	
 
@@ -55,12 +72,20 @@ public:
 	FIF_AIEvent OnAI_Generate;
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FIF_AIEvent OnAI_Reset;
-	
-	
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FIF_AIEvent_NumberUpdate OnAI_NumberAdd;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FIF_AIEvent_NumberUpdate OnAI_NumberRemove;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FIF_AIEvent_GroupNumberUpdate OnAI_GroupNumberAdd;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FIF_AIEvent_GroupNumberUpdate OnAI_GroupNumberRemove;
 
-
+	
 
 	int32 DefaultPoolNum = 10;
-	TMap<TSubclassOf<AActor>, TArray<FPoolData>> Pool;
+	TMap<TSubclassOf<ACharacter>, TArray<FPoolData>> Pool;
 	TMap<FName, TArray<FPoolData>> GroupData;
+
+	TArray<TScriptInterface<IIF_PoolItem>> ActiveAI;
 };

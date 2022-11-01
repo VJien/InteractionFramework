@@ -37,21 +37,23 @@ public:
 	TArray<TSubclassOf<ACharacter>> AI_Class;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	FName Group = TEXT("Group_1");
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bAdjustFootLocation = true;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	bool bMultiGenerate = true;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(MakeEditWidget = true, EditCondition="bMultiGenerate"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|MultiGenerate", meta=(MakeEditWidget = true, EditCondition="bMultiGenerate"))
 	TArray<FTransform> MultiGeneratePoints;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="!bRandomGenerateNum && bMultiGenerate"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|MultiGenerate", meta=(EditCondition="!bRandomGenerateNum && bMultiGenerate"))
 	int32 GenerateNum = 2;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="bMultiGenerate"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|MultiGenerate", meta=(EditCondition="bMultiGenerate"))
 	bool bRandomGenerateNum = false;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="bRandomGenerateNum && bMultiGenerate"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|MultiGenerate", meta=(EditCondition="bRandomGenerateNum && bMultiGenerate"))
 	int32 GenerateNumMin = 1;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="bRandomGenerateNum && bMultiGenerate"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|MultiGenerate", meta=(EditCondition="bRandomGenerateNum && bMultiGenerate"))
 	int32 GenerateNumMax = 3;
 
 

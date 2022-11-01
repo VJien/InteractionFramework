@@ -3,6 +3,7 @@
 
 #include "IF_AI_Generator.h"
 
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InteractionFramework/Pool/IF_PoolItem.h"
@@ -86,16 +87,26 @@ void AIF_AI_Generator::Run_Implementation()
 						{
 							Actor->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
 							FTransform GeneratePoint = GetActorTransform();
+							if (bAdjustFootLocation)
+							{
+								if (auto Character = Cast<ACharacter>(Actor))
+								{
+									float HalfHeight = Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+									auto OldLocation = GeneratePoint.GetTranslation();
+									OldLocation += FVector(0,0,HalfHeight);
+									GeneratePoint.SetTranslation(OldLocation);
+								}
+							}
 							const int32 GenerateNum = MultiGeneratePoints.Num();
 							if (GenerateNum > 0)
 							{
 								if (GenerateNum >= Num)
 								{
-									GeneratePoint = MultiGeneratePoints[Num];
+									GeneratePoint = MultiGeneratePoints[Num] * GeneratePoint;
 								}
 								else
 								{
-									GeneratePoint = MultiGeneratePoints[Num % GenerateNum];
+									GeneratePoint = MultiGeneratePoints[Num % GenerateNum] * GeneratePoint;
 								}
 								
 							}
@@ -118,16 +129,26 @@ void AIF_AI_Generator::Run_Implementation()
 						{
 							Actor->OnDestroyed.AddDynamic(this, &AIF_AI_Generator::OnAI_ActorDestroyed);
 							FTransform GeneratePoint = GetActorTransform();
+							if (bAdjustFootLocation)
+							{
+								if (auto Character = Cast<ACharacter>(Actor))
+								{
+									float HalfHeight = Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+									auto OldLocation = GeneratePoint.GetTranslation();
+									OldLocation += FVector(0,0,HalfHeight);
+									GeneratePoint.SetTranslation(OldLocation);
+								}
+							}
 							const int32 GeneratePointsNum = MultiGeneratePoints.Num();
 							if (GeneratePointsNum > 0)
 							{
 								if (GeneratePointsNum >= Num)
 								{
-									GeneratePoint = MultiGeneratePoints[Num];
+									GeneratePoint = MultiGeneratePoints[i] * GeneratePoint;
 								}
 								else
 								{
-									GeneratePoint = MultiGeneratePoints[Num % GeneratePointsNum];
+									GeneratePoint = MultiGeneratePoints[Num % GeneratePointsNum] * GeneratePoint;
 								}
 								
 							}

@@ -35,7 +35,7 @@ void UIF_AI_Manager::RegisterAI(TScriptInterface<IIF_PoolItem> AI, FName Group)
 		{
 			GroupData.Emplace(Group,TArray<FPoolData>{FPoolData(AI,false)});
 		}
-		OnAI_Generate.Broadcast(AI, Group);
+		
 		if (auto Actor = Cast<AActor>(AI.GetObject()))
 		{
 			Actor->SetActorTickEnabled(true);
@@ -45,6 +45,11 @@ void UIF_AI_Manager::RegisterAI(TScriptInterface<IIF_PoolItem> AI, FName Group)
 		{
 			Character->GetCharacterMovement()->GravityScale = 1;
 		}
+
+		ActiveAI.Emplace(AI);
+		OnAI_Generate.Broadcast(AI, Group);
+		OnAI_NumberAdd.Broadcast(AI,ActiveAI.Num());
+		OnAI_GroupNumberAdd.Broadcast(AI,Group,ActiveAI.Num());
 		
 	}
 }
@@ -75,6 +80,9 @@ void UIF_AI_Manager::ResetAI(TScriptInterface<IIF_PoolItem> AI,  FName Group)
 		}
 		IIF_PoolItem::Execute_OnReset(AI.GetObject());
 		OnAI_Reset.Broadcast(AI,Group);
+		ActiveAI.Remove(AI);
+		OnAI_NumberRemove.Broadcast(AI,ActiveAI.Num());
+		OnAI_GroupNumberRemove.Broadcast(AI,Group,ActiveAI.Num());
 	}
 	
 }
@@ -105,6 +113,9 @@ void UIF_AI_Manager::DeleteAI(TScriptInterface<IIF_PoolItem> AI, FName Group)
 				}
 			}
 		}
+		ActiveAI.Remove(AI);
+		OnAI_NumberRemove.Broadcast(AI,ActiveAI.Num());
+		OnAI_GroupNumberRemove.Broadcast(AI,Group,ActiveAI.Num());
 	}
 }
 
@@ -127,16 +138,98 @@ void UIF_AI_Manager::InitPool()
 	}
 }
 
+int32 UIF_AI_Manager::GetActiveAI_Number()
+{
+	return ActiveAI.Num();
+}
+
+int32 UIF_AI_Manager::GetActiveAI_NumberByGroup(FName InGroup)
+{
+	int32 Num = 0;
+	auto Group = GroupData.Find(InGroup);
+	if (Group)
+	{
+		for (const auto G: *Group)
+		{
+			if (G.bIsClean == false)
+			{
+				Num ++;
+			}
+		}
+	}
+	return Num;
+}
+
+int32 UIF_AI_Manager::GetActiveAI_NumberByClass(TSubclassOf<ACharacter> Class)
+{
+	int32 Num = 0;
+	auto PoolData = Pool.Find(Class);
+	if (PoolData)
+	{
+		for (const auto P: *PoolData)
+		{
+			if (P.bIsClean == false)
+			{
+				Num ++;
+			}
+		}
+	}
+	return Num;
+}
+
+int32 UIF_AI_Manager::GetActiveAI(TArray<TScriptInterface<IIF_PoolItem>>& AI)
+{
+	AI =  ActiveAI;
+	return AI.Num();
+}
+
+int32 UIF_AI_Manager::GetActiveAI_ByGroup(FName InGroup, TArray<TScriptInterface<IIF_PoolItem>>& AI)
+{
+	int32 Num = 0;
+	auto Group = GroupData.Find(InGroup);
+	if (Group)
+	{
+		for (const auto G: *Group)
+		{
+			if (G.bIsClean == false)
+			{
+				AI.Emplace(G.PoolItem);
+				Num ++;
+			}
+		}
+	}
+	return Num;
+}
+
+int32 UIF_AI_Manager::GetActiveAI_ByClass(TSubclassOf<ACharacter> Class, TArray<TScriptInterface<IIF_PoolItem>>& AI)
+{
+	int32 Num = 0;
+	auto PoolData = Pool.Find(Class);
+	if (PoolData)
+	{
+		for (const auto P: *PoolData)
+		{
+			if (P.bIsClean == false)
+			{
+				AI.Emplace(P.PoolItem);
+				Num ++;
+			}
+		}
+	}
+	return Num;
+}
+
 TScriptInterface<IIF_PoolItem> UIF_AI_Manager::RetrieveAI(TSubclassOf<ACharacter> Class)
 {
 
 	auto PoolData = Pool.Find(Class);
 	if (PoolData)
 	{
-		for (auto P: *PoolData)
+		for (auto& P: *PoolData)
 		{
 			if (P.bIsClean == true)
 			{
+				P.bIsClean = false;
 				return P.PoolItem;
 			}
 		}
@@ -148,6 +241,7 @@ TScriptInterface<IIF_PoolItem> UIF_AI_Manager::RetrieveAI(TSubclassOf<ACharacter
 			{
 				if ((*PoolData)[i].bIsClean == true)
 				{
+					(*PoolData)[i].bIsClean = false;
 					return (*PoolData)[i].PoolItem;
 				}
 			}
@@ -162,6 +256,7 @@ TScriptInterface<IIF_PoolItem> UIF_AI_Manager::RetrieveAI(TSubclassOf<ACharacter
 			{
 				if ((*NewPoolData)[i].bIsClean == true)
 				{
+					(*NewPoolData)[i].bIsClean = false;
 					return (*NewPoolData)[i].PoolItem;
 				}
 			}
