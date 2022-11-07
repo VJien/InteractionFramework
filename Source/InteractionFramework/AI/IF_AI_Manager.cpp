@@ -2,6 +2,8 @@
 
 
 #include "IF_AI_Manager.h"
+
+#include "IF_AI_Generator.h"
 #include "InteractionFramework/Pool/IF_PoolItem.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -138,6 +140,22 @@ void UIF_AI_Manager::InitPool()
 	}
 }
 
+void UIF_AI_Manager::RegisterGenerator(AIF_AI_Generator* Generator)
+{
+	if (Generator)
+	{
+		auto CurrGenerators = GeneratorGroup.Find(Generator->Group);
+		if (CurrGenerators)
+		{
+			CurrGenerators->Emplace(Generator);
+		}
+		else
+		{
+			GeneratorGroup.Emplace(Generator->Group, TArray<AIF_AI_Generator*>{Generator});
+		}
+	}
+}
+
 int32 UIF_AI_Manager::GetActiveAI_Number()
 {
 	return ActiveAI.Num();
@@ -217,6 +235,13 @@ int32 UIF_AI_Manager::GetActiveAI_ByClass(TSubclassOf<ACharacter> Class, TArray<
 		}
 	}
 	return Num;
+}
+
+TArray<AIF_AI_Generator*> UIF_AI_Manager::GetGeneratorsByGroup(FName Group)
+{
+	const auto pGenerators =  GeneratorGroup.Find(Group);
+	
+	return pGenerators? *pGenerators: TArray<AIF_AI_Generator*>{};
 }
 
 TScriptInterface<IIF_PoolItem> UIF_AI_Manager::RetrieveAI(TSubclassOf<ACharacter> Class)

@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 
+
 #include "IF_AI_Manager.generated.h"
 
-
+class AIF_AI_Generator;
 class IIF_PoolItem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIF_AIEvent, TScriptInterface<IIF_PoolItem>, AI, FName, Group);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIF_AIEvent_NumberUpdate, TScriptInterface<IIF_PoolItem>, LastAI, int32, NewNumber);
@@ -46,6 +47,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitPool();
 
+	void RegisterGenerator(AIF_AI_Generator* Generator);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetActiveAI_Number();
@@ -60,7 +62,8 @@ public:
 	int32 GetActiveAI_ByGroup(FName Group,TArray<TScriptInterface<IIF_PoolItem>>& AI);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetActiveAI_ByClass(TSubclassOf<ACharacter> Class, TArray<TScriptInterface<IIF_PoolItem>>& AI);
-	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<AIF_AI_Generator*> GetGeneratorsByGroup(FName Group);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TScriptInterface<IIF_PoolItem> RetrieveAI(TSubclassOf<ACharacter> Class);
@@ -88,4 +91,6 @@ public:
 	TMap<FName, TArray<FPoolData>> GroupData;
 
 	TArray<TScriptInterface<IIF_PoolItem>> ActiveAI;
+
+	TMap<FName, TArray<AIF_AI_Generator*>> GeneratorGroup;
 };

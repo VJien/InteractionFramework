@@ -7,7 +7,7 @@
 #include "ISettingsContainer.h"
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
-#include "Core/IFSetting.h"
+#include "InteractionFramework/Core/IFSetting.h"
 #define LOCTEXT_NAMESPACE "InteractionFrameworkSetting"
 void FInteractionFrameworkModule::StartupModule()
 {

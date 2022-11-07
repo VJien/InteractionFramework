@@ -23,6 +23,10 @@ void AIF_AI_Generator::BeginPlay()
 {
 	Super::BeginPlay();
 	Manager = GetWorld()->GetSubsystem<UIF_AI_Manager>(GetWorld());
+	if (Manager.IsValid())
+	{
+		Manager->RegisterGenerator(this);
+	}
 	if (bAutoRun)
 	{
 		Run();
@@ -97,16 +101,16 @@ void AIF_AI_Generator::Run_Implementation()
 									GeneratePoint.SetTranslation(OldLocation);
 								}
 							}
-							const int32 GenerateNum = MultiGeneratePoints.Num();
-							if (GenerateNum > 0)
+							const int32 GeneratePointsNum = MultiGeneratePoints.Num();
+							if (GeneratePointsNum > 0)
 							{
-								if (GenerateNum >= Num)
+								if (GeneratePointsNum >= Num)
 								{
 									GeneratePoint = MultiGeneratePoints[Num] * GeneratePoint;
 								}
 								else
 								{
-									GeneratePoint = MultiGeneratePoints[Num % GenerateNum] * GeneratePoint;
+									GeneratePoint = MultiGeneratePoints[Num % GeneratePointsNum] * GeneratePoint;
 								}
 								
 							}
