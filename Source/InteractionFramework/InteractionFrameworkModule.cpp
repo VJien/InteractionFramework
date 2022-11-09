@@ -29,8 +29,8 @@ void FInteractionFrameworkModule::RegisterSettings()
 			LOCTEXT("IFCategoryName", "Interaction Framework Setting"),
 			LOCTEXT("IFCategoryDescription", "Game configuration for the Interaction Framework  game module"));
 
-		ISettingsSectionPtr SettingsSection = SettingModule->RegisterSettings("Project", "Game", "Interaction Framework Setting",
-			LOCTEXT("SettingsName", "Interaction Framework Setting"),
+		ISettingsSectionPtr SettingsSection = SettingModule->RegisterSettings("Project", "Game", "Interaction Framework",
+			LOCTEXT("SettingsName", "Interaction Framework"),
 			LOCTEXT("SettingsDescription", "Configure my GameSetting"),
 			GetMutableDefault<UIFSetting>());
 
