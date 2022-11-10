@@ -126,3 +126,40 @@ public:
 	
 };
 
+
+
+UCLASS(BlueprintType, Blueprintable, Config = Game, Abstract,EditInlineNew)
+class UIF_InputTypeConfig_CustomEvent : public UIF_InputTypeConfig
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	FString EventName = TEXT("Custom");
+};
+UCLASS(ClassGroup=InteractionFramework, config=Game)
+class UIF_InputTypeConfig_CustomEvent_Action : public UIF_InputTypeConfig_CustomEvent
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	FName Action = NAME_None;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	TEnumAsByte<EInputEvent> KeyEvent;
+	
+};
+
+UCLASS(ClassGroup=InteractionFramework, config=Game)
+class UIF_InputTypeConfig_CustomEvent_Axis : public UIF_InputTypeConfig_CustomEvent
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	FName Axis = NAME_None;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	EMoveAxisFunction Function = EMoveAxisFunction::Greater;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	float Value;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	bool bAbsValue = false;
+	
+};
