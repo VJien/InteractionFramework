@@ -167,7 +167,6 @@ void UIF_VRMovement::SetupWalkData(FIF_WalkData Data)
 
 bool UIF_VRMovement::CheckAxis(EVRMovementType Type,float Axis)
 {
-	UE_LOG(LogTemp, Log, TEXT("ChecKAxis, Type=%d, Value =%f"), int32(Type), Axis)
 	for (auto P: MovementAction)
 	{
 		if (P->MoveType != Type)

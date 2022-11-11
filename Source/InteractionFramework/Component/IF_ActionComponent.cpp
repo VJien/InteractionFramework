@@ -7,11 +7,40 @@
 // Sets default values for this component's properties
 UIF_ActionComponent::UIF_ActionComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+	
 	PrimaryComponentTick.bCanEverTick = true;
+	
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action0);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action1);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action2);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action3);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action4);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action5);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action6);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action7);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action8);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action9);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action10);
+	ActionFuncs.Emplace(&UIF_ActionComponent::Action11);
 
-	// ...
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis0);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis1);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis2);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis3);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis4);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis5);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis6);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis7);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis8);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis9);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis10);
+	AxisFuncs.Emplace(&UIF_ActionComponent::Axis11);
+	ActionName.SetNum(12);
+	ActionEvent.SetNum(12);
+	AxisName.SetNum(12);
+	AxisEvent.SetNum(12);
+	ActionConfigObj.AddDefaulted(12);
+	AxisConfigObj.AddDefaulted(12);
 }
 
 
@@ -19,9 +48,57 @@ UIF_ActionComponent::UIF_ActionComponent()
 void UIF_ActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
+	if (auto Pawn =  Cast<APawn>(GetOwner()))
+	{
+		InputComponent = Pawn->InputComponent;
+	}
+	InitInputMap();
 	
+	
+	
+	// ...
+
+}
+
+void UIF_ActionComponent::InitInputMap()
+{
+	if (bHasInit)
+	{
+		return;
+	}
+	bHasInit = true;
+	if (!InputComponent.IsValid())
+	{
+		return;
+	}
+	for (auto P : InputMap)
+	{
+		if (auto AC = Cast<UIF_InputTypeConfig_CustomEvent_Action>(P))
+		{
+			if (CurrBindIndex_Action >= 12)
+			{
+				break;
+			}
+			ActionName[CurrBindIndex_Action] = (AC->Action);
+			ActionEvent[CurrBindIndex_Action] =( AC->EventName);
+			ActionConfigObj[CurrBindIndex_Action] = AC;
+			InputComponent->BindAction(AC->Action, AC->KeyEvent, this, ActionFuncs[CurrBindIndex_Action]);
+			CurrBindIndex_Action++;
+				
+		}
+		else if (auto AX = Cast<UIF_InputTypeConfig_CustomEvent_Axis>(P))
+		{
+			if (CurrBindIndex_Axis >= 12)
+			{
+				break;
+			}
+			AxisName[CurrBindIndex_Axis] =(AX->Axis);
+			AxisEvent[CurrBindIndex_Axis]=(AX->EventName);
+			AxisConfigObj[CurrBindIndex_Axis]=AX;
+			InputComponent->BindAxis(AX->Axis,  this, AxisFuncs[CurrBindIndex_Axis]);
+			CurrBindIndex_Axis++;
+		}
+	}
 }
 
 
@@ -32,5 +109,52 @@ void UIF_ActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+bool UIF_ActionComponent::CheckAxisValue_Implementation(float Value, UIF_InputTypeConfig_CustomEvent_Axis* AxisConfig)
+{
+	if (!AxisConfig)
+	{
+		return false;
+	}
+	
+	float NewValue = AxisConfig->bAbsValue? FMath::Abs(Value) : Value;
+	switch (AxisConfig->Function)
+	{
+	case EMoveAxisFunction::Greater:
+		{
+			return NewValue > AxisConfig->Value;
+		}
+	case EMoveAxisFunction::GreaterOrEqual:
+		{
+			return NewValue >= AxisConfig->Value;
+		}
+	case EMoveAxisFunction::Equal:
+		{
+			return NewValue == AxisConfig->Value;
+		}
+	case EMoveAxisFunction::LessOrEqual:
+		{
+			return NewValue <= AxisConfig->Value;
+		}
+	case EMoveAxisFunction::Less:
+		{
+			return NewValue < AxisConfig->Value;
+		}
+		default:
+			break;
+		
+		
+	}
+	return false;
+}
+
+void UIF_ActionComponent::ReceiveAxisEvent_Implementation(const FString& Event, float Value)
+{
+}
+
+void UIF_ActionComponent::ReceiveActionEvent_Implementation(const FString& Event)
+{
+	
 }
 

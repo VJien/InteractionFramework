@@ -8,7 +8,39 @@
 #include "IF_ActionComponent.generated.h"
 
 
-UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
+
+#define INPUT_EVENT(PropertyName) \
+FORCEINLINE void Action##PropertyName() \
+{ \
+int32 P = ActionFuncs.Find(&UIF_ActionComponent::Action##PropertyName); \
+	if (P>=0 && P<12) \
+{ \
+ReceiveActionEvent(ActionEvent[P]); \
+} \
+else \
+{UE_LOG(LogTemp, Warning, TEXT("Can not find Action Function"));}  \
+}; \
+FORCEINLINE void Axis##PropertyName(float NewVal) \
+{ \
+int32 P = AxisFuncs.Find(&UIF_ActionComponent::Axis##PropertyName); \
+if (P>=0 && P<12 && AxisConfigObj[P]) \
+{ \
+if (CheckAxisValue(NewVal, AxisConfigObj[P])) \
+	ReceiveAxisEvent(AxisEvent[P], NewVal); \
+} \
+else \
+{UE_LOG(LogTemp, Warning, TEXT("Can not find Axis Function"));}  \
+};
+USTRUCT()
+struct FActionData
+{
+	GENERATED_BODY()
+	
+};
+
+
+
+UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent),Blueprintable, BlueprintType)
 class INTERACTIONFRAMEWORK_API UIF_ActionComponent : public UIF_ActorComponent
 {
 	GENERATED_BODY()
@@ -20,16 +52,57 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	void InitInputMap();
+	
 
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category=config)
-	TArray<UIF_InputTypeConfig_CustomEvent*> ActionMap;
+	TArray<UIF_InputTypeConfig_CustomEvent*> InputMap;
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void ReceiveActionEvent(const FString& Event);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void ReceiveAxisEvent(const FString& Event, float Value);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool CheckAxisValue(float Value, UIF_InputTypeConfig_CustomEvent_Axis* AxisConfig);
+	
+	int32 CurrBindIndex_Action = 0;
+	int32 CurrBindIndex_Axis = 0;
+	
+	//默认创建12个事件
+	INPUT_EVENT(0)
+	INPUT_EVENT(1)
+	INPUT_EVENT(2)
+	INPUT_EVENT(3)
+	INPUT_EVENT(4)
+	INPUT_EVENT(5)
+	INPUT_EVENT(6)
+	INPUT_EVENT(7)
+	INPUT_EVENT(8)
+	INPUT_EVENT(9)
+	INPUT_EVENT(10)
+	INPUT_EVENT(11)
+
+
+	TWeakObjectPtr<UInputComponent> InputComponent = nullptr;
+	
+	TArray<void(UIF_ActionComponent::*)()> ActionFuncs;
+	TArray<FName> ActionName;
+	TArray<FString> ActionEvent;
+	TArray<UIF_InputTypeConfig_CustomEvent_Action*> ActionConfigObj;
+	
+	TArray<void(UIF_ActionComponent::*)(float)> AxisFuncs;
+	TArray<FName> AxisName;
+	TArray<FString> AxisEvent;
+	TArray<UIF_InputTypeConfig_CustomEvent_Axis*> AxisConfigObj;
+
+
+	bool bHasInit = false;
 	
 };
