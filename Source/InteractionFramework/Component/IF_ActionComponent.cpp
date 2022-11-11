@@ -35,12 +35,12 @@ UIF_ActionComponent::UIF_ActionComponent()
 	AxisFuncs.Emplace(&UIF_ActionComponent::Axis9);
 	AxisFuncs.Emplace(&UIF_ActionComponent::Axis10);
 	AxisFuncs.Emplace(&UIF_ActionComponent::Axis11);
-	ActionName.SetNum(12);
-	ActionEvent.SetNum(12);
-	AxisName.SetNum(12);
-	AxisEvent.SetNum(12);
-	ActionConfigObj.AddDefaulted(12);
-	AxisConfigObj.AddDefaulted(12);
+	ActionName.SetNum(MaxEventNum);
+	ActionEvent.SetNum(MaxEventNum);
+	AxisName.SetNum(MaxEventNum);
+	AxisEvent.SetNum(MaxEventNum);
+	ActionConfigObj.AddDefaulted(MaxEventNum);
+	AxisConfigObj.AddDefaulted(MaxEventNum);
 }
 
 
@@ -75,7 +75,7 @@ void UIF_ActionComponent::InitInputMap()
 	{
 		if (auto AC = Cast<UIF_InputTypeConfig_CustomEvent_Action>(P))
 		{
-			if (CurrBindIndex_Action >= 12)
+			if (CurrBindIndex_Action >= MaxEventNum)
 			{
 				break;
 			}
@@ -88,7 +88,7 @@ void UIF_ActionComponent::InitInputMap()
 		}
 		else if (auto AX = Cast<UIF_InputTypeConfig_CustomEvent_Axis>(P))
 		{
-			if (CurrBindIndex_Axis >= 12)
+			if (CurrBindIndex_Axis >= MaxEventNum)
 			{
 				break;
 			}

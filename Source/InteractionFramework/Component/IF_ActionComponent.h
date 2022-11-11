@@ -9,6 +9,9 @@
 
 
 
+
+
+
 #define INPUT_EVENT(PropertyName) \
 FORCEINLINE void Action##PropertyName() \
 { \
@@ -30,12 +33,6 @@ if (CheckAxisValue(NewVal, AxisConfigObj[P])) \
 } \
 else \
 {UE_LOG(LogTemp, Warning, TEXT("Can not find Axis Function"));}  \
-};
-USTRUCT()
-struct FActionData
-{
-	GENERATED_BODY()
-	
 };
 
 
@@ -60,7 +57,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-
+	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category=config)
 	TArray<UIF_InputTypeConfig_CustomEvent*> InputMap;
@@ -89,7 +86,8 @@ public:
 	INPUT_EVENT(10)
 	INPUT_EVENT(11)
 
-
+	int32 MaxEventNum = 12;
+	
 	TWeakObjectPtr<UInputComponent> InputComponent = nullptr;
 	
 	TArray<void(UIF_ActionComponent::*)()> ActionFuncs;
