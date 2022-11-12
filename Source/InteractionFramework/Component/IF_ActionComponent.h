@@ -8,7 +8,7 @@
 #include "IF_ActionComponent.generated.h"
 
 
-
+DECLARE_dynamic_mu
 
 
 
@@ -63,9 +63,9 @@ public:
 	TArray<UIF_InputTypeConfig_CustomEvent*> InputMap;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void ReceiveActionEvent(const FString& Event);
+	void ReceiveActionEvent( UIF_EventConfig* Event);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void ReceiveAxisEvent(const FString& Event, float Value);
+	void ReceiveAxisEvent(UIF_EventConfig* Event, float Value);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CheckAxisValue(float Value, UIF_InputTypeConfig_CustomEvent_Axis* AxisConfig);
 	
@@ -92,12 +92,12 @@ public:
 	
 	TArray<void(UIF_ActionComponent::*)()> ActionFuncs;
 	TArray<FName> ActionName;
-	TArray<FString> ActionEvent;
+	TArray<UIF_EventConfig*> ActionEvent;
 	TArray<UIF_InputTypeConfig_CustomEvent_Action*> ActionConfigObj;
 	
 	TArray<void(UIF_ActionComponent::*)(float)> AxisFuncs;
 	TArray<FName> AxisName;
-	TArray<FString> AxisEvent;
+	TArray<UIF_EventConfig*> AxisEvent;
 	TArray<UIF_InputTypeConfig_CustomEvent_Axis*> AxisConfigObj;
 
 

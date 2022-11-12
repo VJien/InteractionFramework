@@ -88,42 +88,26 @@ class UIF_InputTypeConfig : public UObject
 };
 
 UCLASS(BlueprintType, Blueprintable, Config = Game, Abstract,EditInlineNew)
-class UIF_InputTypeConfig_Movement : public UObject
+class UIF_EventConfig : public UObject
 {
 	GENERATED_BODY()
-public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	EVRMovementType MoveType = EVRMovementType::None;
 };
 
-
-
-UCLASS(ClassGroup=InteractionFramework, config=Game)
-class UIF_InputTypeConfig_Movement_Action : public UIF_InputTypeConfig_Movement
+UCLASS(BlueprintType, Blueprintable, Config = Game, EditInlineNew)
+class UIF_EventConfig_String : public UIF_EventConfig
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	FName Action = NAME_None;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	TEnumAsByte<EInputEvent> Event;
-	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	FString EventName = TEXT("Custom");
 };
-
-UCLASS(ClassGroup=InteractionFramework, config=Game)
-class UIF_InputTypeConfig_Movement_Axis : public UIF_InputTypeConfig_Movement
+UCLASS(BlueprintType, Blueprintable, Config = Game, EditInlineNew)
+class UIF_EventConfig_MovementType : public UIF_EventConfig
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	FName Axis = NAME_None;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	EMoveAxisFunction Function = EMoveAxisFunction::Greater;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	float Value;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	bool bAbsValue = false;
-	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	TEnumAsByte<EVRMovementType> MovementType = EVRMovementType::None;
 };
 
 
@@ -133,9 +117,11 @@ class UIF_InputTypeConfig_CustomEvent : public UIF_InputTypeConfig
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
-	FString EventName = TEXT("Custom");
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent, Instanced)
+	UIF_EventConfig* Event = nullptr;
 };
+
+
 UCLASS(ClassGroup=InteractionFramework, config=Game)
 class UIF_InputTypeConfig_CustomEvent_Action : public UIF_InputTypeConfig_CustomEvent
 {
