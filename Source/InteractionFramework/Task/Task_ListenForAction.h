@@ -21,8 +21,8 @@ public:
 	FIF_OnActionEvent OnKeyReleased;
 
 	// 监听 输入Action
-	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "", DefaultToSelf = "", BlueprintInternalUseOnly = "TRUE"))
-		static UTask_ListenForAction* ListenForInputAction(APlayerController* Controller, FName ActionName);
+	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE"))
+		static UTask_ListenForAction* ListenForInputAction(UObject* Context, FName ActionName);
 
 
 

@@ -20,8 +20,8 @@ public:
 
 
 	// 监听 输入Action
-	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "", DefaultToSelf = "", BlueprintInternalUseOnly = "TRUE"))
-		static UTask_ListenForAxis* ListenForAxis(APlayerController* Controller, FName AxisName);
+	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE"))
+		static UTask_ListenForAxis* ListenForAxis(UObject* Context, FName AxisName);
 
 
 

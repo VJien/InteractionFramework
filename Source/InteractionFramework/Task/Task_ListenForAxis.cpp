@@ -3,18 +3,20 @@
 
 #include "Task_ListenForAxis.h"
 
-UTask_ListenForAxis* UTask_ListenForAxis::ListenForAxis(APlayerController* Controller, FName AxisName)
+#include "Kismet/GameplayStatics.h"
+
+UTask_ListenForAxis* UTask_ListenForAxis::ListenForAxis(UObject* Context, FName AxisName)
 {
 	UTask_ListenForAxis* Obj = NewObject<UTask_ListenForAxis>();
-	Obj->PC = Controller;
+	Obj->PC =  UGameplayStatics::GetPlayerController(Context,0);
 	Obj->Axis = AxisName;
 
-	if (!IsValid(Obj) || AxisName == NAME_None || !Controller)
+	if (!IsValid(Obj) || AxisName == NAME_None || !Obj->PC)
 	{
 		Obj->RemoveFromRoot();
 		return nullptr;
 	}
-	Obj->Handle = Controller->InputComponent->BindAxis(AxisName,  Obj,&UTask_ListenForAxis::AxisUpdate);
+	Obj->Handle = Obj->PC->InputComponent->BindAxis(AxisName,  Obj,&UTask_ListenForAxis::AxisUpdate);
 
 	return Obj;
 }

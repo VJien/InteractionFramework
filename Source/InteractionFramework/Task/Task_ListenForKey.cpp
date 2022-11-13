@@ -3,21 +3,24 @@
 
 #include "Task_ListenForKey.h"
 
+#include "Kismet/GameplayStatics.h"
 
-UTask_ListenForKey* UTask_ListenForKey::ListenForKey(APlayerController* Controller, FKey Key)
+
+UTask_ListenForKey* UTask_ListenForKey::ListenForKey(UObject* Context, FKey Key)
 {
 	UTask_ListenForKey* Obj = NewObject<UTask_ListenForKey>();
-	Obj->PC = Controller;
+	Obj->PC =  UGameplayStatics::GetPlayerController(Context,0);
+	
 	Obj->LocalKey = Key;
 
-	if (!IsValid(Obj) || !Key.IsValid() || !Controller)
+	if (!IsValid(Obj) || !Key.IsValid() || !Obj->PC)
 	{
 		Obj->RemoveFromRoot();
 		return nullptr;
 	}
-	Obj->Handle = Controller->InputComponent->BindKey(Key, EInputEvent::IE_Pressed, Obj,&UTask_ListenForKey::KeyPressed);
-	Obj->Handle = Controller->InputComponent->BindKey(Key, EInputEvent::IE_Released, Obj,&UTask_ListenForKey::KeyReleased);
-	Obj->Handle = Controller->InputComponent->BindKey(Key, EInputEvent::IE_DoubleClick, Obj,&UTask_ListenForKey::KeyDoubleClicked);
+	Obj->Handle = Obj->PC->InputComponent->BindKey(Key, EInputEvent::IE_Pressed, Obj,&UTask_ListenForKey::KeyPressed);
+	Obj->Handle = Obj->PC->InputComponent->BindKey(Key, EInputEvent::IE_Released, Obj,&UTask_ListenForKey::KeyReleased);
+	Obj->Handle = Obj->PC->InputComponent->BindKey(Key, EInputEvent::IE_DoubleClick, Obj,&UTask_ListenForKey::KeyDoubleClicked);
 	return Obj;
 }
 

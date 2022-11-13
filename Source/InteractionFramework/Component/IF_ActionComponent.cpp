@@ -149,12 +149,16 @@ bool UIF_ActionComponent::CheckAxisValue_Implementation(float Value, UIF_InputTy
 	return false;
 }
 
-void UIF_ActionComponent::ReceiveAxisEvent_Implementation(UIF_EventConfig*  Event, float Value)
+void UIF_ActionComponent::ExcuteAxisEvent(UIF_EventConfig*  Event, float Value)
 {
+	ReceiveAxisEvent(Event, Value);
+	OnAxisEventActivated.Broadcast(Event,Value);
 }
 
-void UIF_ActionComponent::ReceiveActionEvent_Implementation(UIF_EventConfig* Event)
+
+void UIF_ActionComponent::ExcuteActionEvent(UIF_EventConfig* Event)
 {
-	
+	ReceiveActionEvent(Event);
+	OnActionEventActivated.Broadcast(Event);
 }
 

@@ -24,8 +24,8 @@ public:
 
 
 	// 监听 输入Action
-	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "", DefaultToSelf = "", BlueprintInternalUseOnly = "TRUE"))
-		static UTask_ListenForKey* ListenForKey(APlayerController* Controller, FKey Key);
+	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE"))
+		static UTask_ListenForKey* ListenForKey(UObject* Context, FKey Key);
 
 
 

@@ -8,8 +8,8 @@
 #include "IF_ActionComponent.generated.h"
 
 
-DECLARE_dynamic_mu
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionEvent,UIF_EventConfig*, Event);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAxisEvent,UIF_EventConfig*, Event, float, value);
 
 
 #define INPUT_EVENT(PropertyName) \
@@ -18,7 +18,7 @@ FORCEINLINE void Action##PropertyName() \
 int32 P = ActionFuncs.Find(&UIF_ActionComponent::Action##PropertyName); \
 	if (P>=0 && P<12) \
 { \
-ReceiveActionEvent(ActionEvent[P]); \
+ExcuteActionEvent(ActionEvent[P]); \
 } \
 else \
 {UE_LOG(LogTemp, Warning, TEXT("Can not find Action Function"));}  \
@@ -29,7 +29,7 @@ int32 P = AxisFuncs.Find(&UIF_ActionComponent::Axis##PropertyName); \
 if (P>=0 && P<12 && AxisConfigObj[P]) \
 { \
 if (CheckAxisValue(NewVal, AxisConfigObj[P])) \
-	ReceiveAxisEvent(AxisEvent[P], NewVal); \
+	ExcuteAxisEvent(AxisEvent[P], NewVal); \
 } \
 else \
 {UE_LOG(LogTemp, Warning, TEXT("Can not find Axis Function"));}  \
@@ -58,16 +58,24 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnActionEvent OnActionEventActivated;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnAxisEvent OnAxisEventActivated;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category=config)
 	TArray<UIF_InputTypeConfig_CustomEvent*> InputMap;
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void ReceiveActionEvent( UIF_EventConfig* Event);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void ReceiveAxisEvent(UIF_EventConfig* Event, float Value);
+	virtual void ExcuteActionEvent(UIF_EventConfig* Event);
+	virtual void ExcuteAxisEvent(UIF_EventConfig* Event, float Value);
+	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CheckAxisValue(float Value, UIF_InputTypeConfig_CustomEvent_Axis* AxisConfig);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void ReceiveActionEvent(UIF_EventConfig* Event);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void ReceiveAxisEvent(UIF_EventConfig* Event, float Value);
 	
 	int32 CurrBindIndex_Action = 0;
 	int32 CurrBindIndex_Axis = 0;

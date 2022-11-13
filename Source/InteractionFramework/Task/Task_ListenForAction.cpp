@@ -3,21 +3,23 @@
 
 #include "Task_ListenForAction.h"
 
-UTask_ListenForAction* UTask_ListenForAction::ListenForInputAction(APlayerController* Controller, FName ActionName)
-{
-	UTask_ListenForAction* ListenForAction = NewObject<UTask_ListenForAction>();
-	ListenForAction->PC = Controller;
-	ListenForAction->Action = ActionName;
+#include "Kismet/GameplayStatics.h"
 
-	if (!IsValid(ListenForAction) || ActionName == NAME_None || !Controller)
+UTask_ListenForAction* UTask_ListenForAction::ListenForInputAction(UObject* Context, FName ActionName)
+{
+	UTask_ListenForAction* Obj = NewObject<UTask_ListenForAction>();
+	Obj->PC =  UGameplayStatics::GetPlayerController(Context,0);
+	Obj->Action = ActionName;
+
+	if (!IsValid(Obj) || ActionName == NAME_None || !Obj->PC)
 	{
-		ListenForAction->RemoveFromRoot();
+		Obj->RemoveFromRoot();
 		return nullptr;
 	}
-	ListenForAction->Handle = Controller->InputComponent->BindAction(ActionName, EInputEvent::IE_Pressed, ListenForAction,&UTask_ListenForAction::KeyPressed);
-	ListenForAction->Handle = Controller->InputComponent->BindAction(ActionName, EInputEvent::IE_Released, ListenForAction,&UTask_ListenForAction::KeyReleased);
+	Obj->Handle = Obj->PC->InputComponent->BindAction(ActionName, EInputEvent::IE_Pressed, Obj,&UTask_ListenForAction::KeyPressed);
+	Obj->Handle = Obj->PC->InputComponent->BindAction(ActionName, EInputEvent::IE_Released, Obj,&UTask_ListenForAction::KeyReleased);
 
-	return ListenForAction;
+	return Obj;
 }
 
 
