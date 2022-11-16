@@ -107,7 +107,7 @@ class UIF_EventConfig_MovementType : public UIF_EventConfig
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
-	TEnumAsByte<EVRMovementType> MovementType = EVRMovementType::None;
+	EVRMovementType MovementType = EVRMovementType::None;
 };
 
 
@@ -147,5 +147,18 @@ public:
 	float Value;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
 	bool bAbsValue = false;
+	
+};
+
+
+UCLASS(ClassGroup=InteractionFramework, config=Game)
+class UIF_InputTypeConfig_CustomEvent_Key : public UIF_InputTypeConfig_CustomEvent
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	FKey Key;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=CustomEvent)
+	TEnumAsByte<EInputEvent> KeyEvent;
 	
 };

@@ -19,6 +19,11 @@
 			"Name": "InteractionFramework",
 			"Type": "Runtime",
 			"LoadingPhase": "PreLoadingScreen"
+		},
+		{
+			"Name": "InteractionFrameworkEditor",
+			"Type": "UncookedOnly",
+			"LoadingPhase": "PreLoadingScreen"
 		}
 	]
 }
