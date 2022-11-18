@@ -24,8 +24,8 @@ public:
 
 
 	// 监听 输入Action
-	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE"))
-		static UTask_ListenForKey* ListenForKey(UObject* Context, FKey Key);
+	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE", AdvancedDisplay="2"))
+		static UTask_ListenForKey* ListenForKey(UObject* Context, FKey Key, bool bTriggerWhenPaused = true, bool bConsumeInput = true);
 
 
 
@@ -37,7 +37,7 @@ protected:
 	APlayerController* PC = nullptr;
 
 	FKey LocalKey;
-	FInputKeyBinding Handle; 
+	bool bTriggerWhenPaused = false;
 
 	void KeyPressed();
 	void KeyReleased();

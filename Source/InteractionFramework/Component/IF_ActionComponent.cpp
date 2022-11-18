@@ -80,7 +80,7 @@ void UIF_ActionComponent::InitInputMap()
 				break;
 			}
 			ActionName[CurrBindIndex_Action] = (AC->Action);
-			ActionEvent[CurrBindIndex_Action] =( AC->Event);
+			ActionEvent[CurrBindIndex_Action] =( AC->EventConfig);
 			ActionConfigObj[CurrBindIndex_Action] = AC;
 			InputComponent->BindAction(AC->Action, AC->KeyEvent, this, ActionFuncs[CurrBindIndex_Action]);
 			CurrBindIndex_Action++;
@@ -93,7 +93,7 @@ void UIF_ActionComponent::InitInputMap()
 				break;
 			}
 			AxisName[CurrBindIndex_Axis] =(AX->Axis);
-			AxisEvent[CurrBindIndex_Axis]=(AX->Event);
+			AxisEvent[CurrBindIndex_Axis]=(AX->EventConfig);
 			AxisConfigObj[CurrBindIndex_Axis]=AX;
 			InputComponent->BindAxis(AX->Axis,  this, AxisFuncs[CurrBindIndex_Axis]);
 			CurrBindIndex_Axis++;

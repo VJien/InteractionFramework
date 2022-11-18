@@ -20,8 +20,8 @@ public:
 
 
 	// 监听 输入Action
-	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE"))
-		static UTask_ListenForAxis* ListenForAxis(UObject* Context, FName AxisName);
+	UFUNCTION(BlueprintCallable, Category = "IF|Task", meta = (HidePin = "Context", DefaultToSelf = "Context", BlueprintInternalUseOnly = "TRUE", AdvancedDisplay="2"))
+		static UTask_ListenForAxis* ListenForAxis(UObject* Context, FName AxisName, bool bTriggerWhenPaused = true, bool bConsumeInput = true);
 
 
 
@@ -33,7 +33,7 @@ protected:
 	APlayerController* PC = nullptr;
 
 	FName Axis;
-	FInputAxisBinding Handle; 
+
 
 	void AxisUpdate(float Value);
 };

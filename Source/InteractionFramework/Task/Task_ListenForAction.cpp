@@ -5,7 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-UTask_ListenForAction* UTask_ListenForAction::ListenForInputAction(UObject* Context, FName ActionName)
+UTask_ListenForAction* UTask_ListenForAction::ListenForInputAction(UObject* Context, FName ActionName, bool bTriggerWhenPaused, bool bConsumeInput)
 {
 	UTask_ListenForAction* Obj = NewObject<UTask_ListenForAction>();
 	Obj->PC =  UGameplayStatics::GetPlayerController(Context,0);
@@ -16,9 +16,12 @@ UTask_ListenForAction* UTask_ListenForAction::ListenForInputAction(UObject* Cont
 		Obj->RemoveFromRoot();
 		return nullptr;
 	}
-	Obj->Handle = Obj->PC->InputComponent->BindAction(ActionName, EInputEvent::IE_Pressed, Obj,&UTask_ListenForAction::KeyPressed);
-	Obj->Handle = Obj->PC->InputComponent->BindAction(ActionName, EInputEvent::IE_Released, Obj,&UTask_ListenForAction::KeyReleased);
-
+	auto& BindPress = Obj->PC->InputComponent->BindAction(ActionName, EInputEvent::IE_Pressed, Obj,&UTask_ListenForAction::KeyPressed);
+	BindPress.bExecuteWhenPaused = bTriggerWhenPaused;
+	BindPress.bConsumeInput = bConsumeInput;
+	auto& DoubleClickBind = Obj->PC->InputComponent->BindAction(ActionName, EInputEvent::IE_Released, Obj,&UTask_ListenForAction::KeyReleased);
+	DoubleClickBind.bExecuteWhenPaused = bTriggerWhenPaused;
+	DoubleClickBind.bConsumeInput = bConsumeInput;
 	return Obj;
 }
 

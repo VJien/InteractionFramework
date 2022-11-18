@@ -5,7 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-UTask_ListenForAxis* UTask_ListenForAxis::ListenForAxis(UObject* Context, FName AxisName)
+UTask_ListenForAxis* UTask_ListenForAxis::ListenForAxis(UObject* Context, FName AxisName, bool bTriggerWhenPaused, bool bConsumeInput)
 {
 	UTask_ListenForAxis* Obj = NewObject<UTask_ListenForAxis>();
 	Obj->PC =  UGameplayStatics::GetPlayerController(Context,0);
@@ -16,8 +16,8 @@ UTask_ListenForAxis* UTask_ListenForAxis::ListenForAxis(UObject* Context, FName 
 		Obj->RemoveFromRoot();
 		return nullptr;
 	}
-	Obj->Handle = Obj->PC->InputComponent->BindAxis(AxisName,  Obj,&UTask_ListenForAxis::AxisUpdate);
-
+	auto& Bind = Obj->PC->InputComponent->BindAxis(AxisName,  Obj,&UTask_ListenForAxis::AxisUpdate);
+	Bind.bExecuteWhenPaused = bTriggerWhenPaused;
 	return Obj;
 }
 
