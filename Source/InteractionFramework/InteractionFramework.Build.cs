@@ -38,7 +38,8 @@ public class InteractionFramework : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"InputCore"
+				"InputCore",
+				"NavigationSystem"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

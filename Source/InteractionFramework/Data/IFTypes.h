@@ -7,7 +7,7 @@
 #include "IFTypes.generated.h"
 
 UENUM(BlueprintType)
-enum class EMoveAxisFunction: uint8
+enum class EIF_MoveAxisFunction: uint8
 {
 	Equal,
 	Greater,
@@ -17,7 +17,7 @@ enum class EMoveAxisFunction: uint8
 };
 
 UENUM(BlueprintType)
-enum class EVRMovementType: uint8
+enum class EIF_VRMovementType: uint8
 {
 	None,
 	PreTeleport,
@@ -31,7 +31,7 @@ enum class EVRMovementType: uint8
 	JumpCurve
 };
 UENUM(BlueprintType)
-enum class EVRPlayerAction: uint8
+enum class EIF_VRPlayerAction: uint8
 {
 	None,
 	Move,
@@ -40,7 +40,7 @@ enum class EVRPlayerAction: uint8
 };
 
 UENUM(BlueprintType)
-enum class EVRInteractionInputType: uint8
+enum class EIF_VRInteractionInputType: uint8
 {
 	None,
 	Trigger,
@@ -56,7 +56,7 @@ enum class EVRInteractionInputType: uint8
 
 
 UENUM(BlueprintType)
-enum class EVRInteractionInputEvent: uint8
+enum class EIF_VRInteractionInputEvent: uint8
 {
 	None,
 	Press,
@@ -64,15 +64,29 @@ enum class EVRInteractionInputEvent: uint8
 	DoubleClick
 };
 
+UENUM(BlueprintType)
+enum class EIF_VRMoveDirection: uint8
+{
+	Camera,
+	CustomAimComponent,
+};
+UENUM(BlueprintType)
+enum class EIF_VRTraceType: uint8
+{
+	None,
+	Parabola,
+	Linear,
+};
+
 
 USTRUCT(BlueprintType)
-struct FVRInteractionInputData
+struct FIF_VRInteractionInputData
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	EVRInteractionInputType Type;
+	EIF_VRInteractionInputType Type;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	EVRInteractionInputEvent Event;
+	EIF_VRInteractionInputEvent Event;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bTouch = false;
 	
@@ -107,7 +121,7 @@ class UIF_EventConfig_MovementType : public UIF_EventConfig
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Movement)
-	EVRMovementType MovementType = EVRMovementType::None;
+	EIF_VRMovementType MovementType = EIF_VRMovementType::None;
 };
 
 
@@ -142,7 +156,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category=Axis)
 	FName Axis = NAME_None;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category=Axis)
-	EMoveAxisFunction Function = EMoveAxisFunction::Greater;
+	EIF_MoveAxisFunction Function = EIF_MoveAxisFunction::Greater;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category=Axis)
 	float Value;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category=Axis)

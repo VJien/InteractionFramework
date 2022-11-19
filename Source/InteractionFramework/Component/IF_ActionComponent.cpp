@@ -121,23 +121,23 @@ bool UIF_ActionComponent::CheckAxisValue_Implementation(float Value, UIF_InputTy
 	float NewValue = AxisConfig->bAbsValue? FMath::Abs(Value) : Value;
 	switch (AxisConfig->Function)
 	{
-	case EMoveAxisFunction::Greater:
+	case EIF_MoveAxisFunction::Greater:
 		{
 			return NewValue > AxisConfig->Value;
 		}
-	case EMoveAxisFunction::GreaterOrEqual:
+	case EIF_MoveAxisFunction::GreaterOrEqual:
 		{
 			return NewValue >= AxisConfig->Value;
 		}
-	case EMoveAxisFunction::Equal:
+	case EIF_MoveAxisFunction::Equal:
 		{
 			return NewValue == AxisConfig->Value;
 		}
-	case EMoveAxisFunction::LessOrEqual:
+	case EIF_MoveAxisFunction::LessOrEqual:
 		{
 			return NewValue <= AxisConfig->Value;
 		}
-	case EMoveAxisFunction::Less:
+	case EIF_MoveAxisFunction::Less:
 		{
 			return NewValue < AxisConfig->Value;
 		}
