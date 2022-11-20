@@ -24,16 +24,21 @@ void AIF_VR_TraceVisual::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AIF_VR_TraceVisual::UpdateData(FVector Location, const TArray<FVector>& Path, bool bValidLocation)
-{
-	
-}
-
-void AIF_VR_TraceVisual::Show()
+void AIF_VR_TraceVisual::UpdateData_Implementation(FVector Location, const TArray<FVector>& Path, bool bValidLocation)
 {
 }
 
-void AIF_VR_TraceVisual::Hidden()
+
+
+
+
+void AIF_VR_TraceVisual::Hidden_Implementation()
 {
 }
+
+void AIF_VR_TraceVisual::Show_Implementation()
+{
+}
+
+
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractionFramework/SceneItem/IF_VR_TraceVisual.h"
 
 #include "IFSetting.generated.h"
 
@@ -23,4 +24,8 @@ public:
 	int32 DefaultPoolNum = 10;
 	UPROPERTY(EditAnywhere, Category="Pool", Config)
 	TMap<TSoftClassPtr<ACharacter>, int32 > AIPoolData;
+
+	UPROPERTY(EditAnywhere, Category="Pool", Config)
+	TSoftClassPtr<AIF_VR_TraceVisual> TraceVisual;
+	
 };

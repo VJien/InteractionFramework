@@ -7,12 +7,13 @@
 #define LOCTEXT_NAMESPACE "InteractionFrameworkEditor"
 void FInteractionFrameworkEditorModule::StartupModule()
 {
-	IModuleInterface::StartupModule();
+	
+	RegisterSettings();
 }
 
 void FInteractionFrameworkEditorModule::ShutdownModule()
 {
-	IModuleInterface::ShutdownModule();
+	UnregisterSettings();
 }
 
 void FInteractionFrameworkEditorModule::RegisterSettings()

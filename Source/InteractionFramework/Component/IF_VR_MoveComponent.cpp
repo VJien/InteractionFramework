@@ -38,6 +38,14 @@ void UIF_VR_MoveComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
+void UIF_VR_MoveComponent::TurnCharacter_Implementation(float value)
+{
+	if (value != 0)
+	{
+		VR_Pawn->AddActorWorldRotation(FRotator(0,value * TurnAngle,0));
+	}
+}
+
 bool UIF_VR_MoveComponent::IsValidTeleportLocation(const FHitResult& HitResult, FVector& ProjectLocation)
 {
 	bool bProjectSuccess = UNavigationSystemV1::K2_ProjectPointToNavigation(this,HitResult.ImpactPoint,
@@ -47,6 +55,10 @@ bool UIF_VR_MoveComponent::IsValidTeleportLocation(const FHitResult& HitResult, 
 
 inline void UIF_VR_MoveComponent::Init_Implementation(FIF_VRMoveData InitData)
 {
+	if (!Settings)
+	{
+		Settings = UIFSetting::Get();
+	}
 
 	if (!TraceVisual)
 	{
@@ -54,7 +66,13 @@ inline void UIF_VR_MoveComponent::Init_Implementation(FIF_VRMoveData InitData)
 		SpawnParameters.Instigator = VR_Pawn;
 		SpawnParameters.Owner = GetOwner();
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		TraceVisual = GetWorld()->SpawnActor<AIF_VR_TraceVisual>(AIF_VR_TraceVisual::StaticClass(),GetOwner()->GetActorTransform(), SpawnParameters);
+		UClass* Class = nullptr;
+		if (Settings->TraceVisual.IsValid())
+		{
+			Class = Settings->TraceVisual.Get();
+		}
+		UClass* VisualClass = Class? Class: AIF_VR_TraceVisual::StaticClass();
+		TraceVisual = GetWorld()->SpawnActor<AIF_VR_TraceVisual>(VisualClass,GetOwner()->GetActorTransform(), SpawnParameters);
 	}
 	VR_Pawn =InitData.VR_Pawn;
 	MovementComponent = InitData.MovementComponent;
@@ -107,6 +125,7 @@ void UIF_VR_MoveComponent::UpdateTeleportTrace_Implementation()
 			{
 				TraceVisual->UpdateData(TeleportProjectedLocation, TeleportPathPoints, bValidTeleportLocation);
 			}
+			break;
 			
 		}
 	case EIF_VRTraceType::Linear:
@@ -149,6 +168,7 @@ void UIF_VR_MoveComponent::UpdateTeleportTrace_Implementation()
 			{
 				TraceVisual->UpdateData(TeleportProjectedLocation, TeleportPathPoints, bValidTeleportLocation);
 			}
+			break;
 		}
 		default:
 			break;

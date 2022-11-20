@@ -25,10 +25,10 @@ public:
 
 
 
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent)
 	void UpdateData(FVector Location, const TArray<FVector>& Path, bool bValidLocation);
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent)
 	void Show();
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent)
 	void Hidden();
 };

@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "InteractionFramework/Core/IFSetting.h"
 #include "InteractionFramework/Data/IFTypes.h"
 #include "InteractionFramework/SceneItem/IF_VR_TraceVisual.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -57,6 +58,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
 	AIF_VR_TraceVisual* TraceVisual = nullptr;
 
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UIFSetting* Settings = nullptr;
+	
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Init(FIF_VRMoveData Data);
@@ -106,16 +110,22 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Teleport|Linear")
 	float TeleportMaxDistance = 1000.0f;
 
-
 	
 	UPROPERTY(BlueprintReadWrite, Category="Config|Teleport")
 	TArray<AActor*> TeleportIgnoreActors;
-
 	bool bTeleportTraceActive = false;
 	FVector TeleportProjectedLocation = FVector::ZeroVector;
 	TArray<FVector> TeleportPathPoints;
 	bool bValidTeleportLocation = false;
 	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Turn")
+	float TurnAngle = 45.f;
+
+
+
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void TurnCharacter(float Value);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void MoveCharacter(float Fwd, float Right);
