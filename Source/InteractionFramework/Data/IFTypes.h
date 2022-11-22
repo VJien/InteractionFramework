@@ -78,6 +78,24 @@ enum class EIF_VRTraceType: uint8
 	Linear,
 };
 
+UENUM(BlueprintType)
+enum class EIF_VRHandType: uint8
+{
+	None,
+	Left,
+	Right,
+};
+
+
+UENUM(BlueprintType)
+enum class EIF_2HandGrabMainHandRightAxis: uint8
+{
+	X,
+	Y,
+	Z,
+};
+
+
 
 USTRUCT(BlueprintType)
 struct FIF_VRInteractionInputData
