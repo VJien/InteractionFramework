@@ -11,9 +11,10 @@
 UENUM(BlueprintType)
 enum class EIF_GrabStat: uint8
 {
-	None,
-	Main,
-	Secondary,
+	None = 0,
+	Main = 1,
+	Secondary = 2,
+	MarkForRelease = 3,
 };
 
 
@@ -36,7 +37,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 protected:
 	UFUNCTION(BlueprintCallable)
-	void RefreshGrabStat();
+	bool RefreshGrabStat();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp);
 public:
@@ -45,7 +46,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BeRelease();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void NotifyGrabComponentUpdate();
+	void NotifyGrabComponentUpdate(UIF_GrabTargetComponent* OtherComp = nullptr, EIF_GrabStat GivenStat = EIF_GrabStat::Main);
 
 	UPROPERTY(BlueprintReadWrite)
 	UIF_GrabSourceComponent* GrabSourceComponent = nullptr;
@@ -55,10 +56,16 @@ public:
 	UIF_GrabTargetComponent* OtherGrabTargetComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
 	EIF_GrabStat GrabStat = EIF_GrabStat::None;
+
 	
+	//抓取方式
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	EIF_VRGrabRule GrabRule = EIF_VRGrabRule::Any;
+	//优先级, 越小越优先!!
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	int32 GrabPriority = 0;
-
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	EIF_2HandGrabMainHandRightAxis MainHandRightAxis = EIF_2HandGrabMainHandRightAxis::Z;
 
 	
 

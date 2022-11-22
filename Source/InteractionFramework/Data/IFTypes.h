@@ -55,14 +55,6 @@ enum class EIF_VRInteractionInputType: uint8
 };
 
 
-UENUM(BlueprintType)
-enum class EIF_VRInteractionInputEvent: uint8
-{
-	None,
-	Press,
-	Release,
-	DoubleClick
-};
 
 UENUM(BlueprintType)
 enum class EIF_VRMoveDirection: uint8
@@ -95,20 +87,14 @@ enum class EIF_2HandGrabMainHandRightAxis: uint8
 	Z,
 };
 
-
-
-USTRUCT(BlueprintType)
-struct FIF_VRInteractionInputData
+UENUM(BlueprintType)
+enum class EIF_VRGrabRule: uint8
 {
-	GENERATED_BODY()
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	EIF_VRInteractionInputType Type;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	EIF_VRInteractionInputEvent Event;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool bTouch = false;
-	
+	Any,
+	AlwaysMainHand,
+	AlwaysSecondaryHand,
 };
+
 
 
 

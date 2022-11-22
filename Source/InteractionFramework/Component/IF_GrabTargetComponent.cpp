@@ -41,11 +41,11 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			FVector Dir = OtherLoc - SourceTrans.GetLocation();
 			Dir.Normalize();
 			FVector Y;
-			if (GrabSourceComponent->MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::X)
+			if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::X)
 			{
 				Y = UKismetMathLibrary::GetForwardVector(SourceTrans.Rotator());
 			}
-			else if (GrabSourceComponent->MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Y)
+			else if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Y)
 			{
 				Y = UKismetMathLibrary::GetRightVector(SourceTrans.Rotator());
 			}
@@ -76,28 +76,115 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
-void UIF_GrabTargetComponent::RefreshGrabStat()
+bool UIF_GrabTargetComponent::RefreshGrabStat()
 {
 	if (HasAnyOtherComponentBeGrab(OtherGrabTargetComponent))
 	{
-		//当前的比其他的优先级高
-		if (GrabPriority < OtherGrabTargetComponent->GrabPriority )
+		switch (GrabRule)
 		{
-			GrabStat = EIF_GrabStat::Main;
+		case EIF_VRGrabRule::Any:
+			{
+				if (OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::Any)
+				{
+					//当前的比其他的优先级高
+					if (GrabPriority < OtherGrabTargetComponent->GrabPriority)
+					{
+						GrabStat = EIF_GrabStat::Main;
+						OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
+						return true;
+					}
+					else
+					{
+						GrabStat = EIF_GrabStat::Secondary;
+						OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
+						return true;
+					}
+					
+				}
+				else if(OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::AlwaysMainHand)
+				{
+					GrabStat = EIF_GrabStat::Secondary;
+					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
+					return true;
+				}
+				else
+				{
+					GrabStat = EIF_GrabStat::Main;
+					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
+					return true;
+				}
+				
+			}
+		case EIF_VRGrabRule::AlwaysMainHand:
+			{
+				if (OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::Any)
+				{
+					GrabStat = EIF_GrabStat::Main;
+					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
+					return true;
+				}
+				else if(OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::AlwaysMainHand)
+				{
+					//当前的比其他的优先级高
+					if (GrabPriority < OtherGrabTargetComponent->GrabPriority )
+					{
+						GrabStat = EIF_GrabStat::Main;
+						OtherGrabTargetComponent->GrabSourceComponent->Release();
+						OtherGrabTargetComponent = nullptr;
+						return true;
+					}
+					else
+					{
+						GrabStat = EIF_GrabStat::MarkForRelease;
+						OtherGrabTargetComponent->NotifyGrabComponentUpdate();
+						if (GrabSourceComponent)
+						{
+							GrabSourceComponent->Release();
+						}
+						return false;
+					}
+				}
+				else // Secondary
+				{
+					GrabStat = EIF_GrabStat::Main;
+					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
+					return true;
+				}
+			}
+		case EIF_VRGrabRule::AlwaysSecondaryHand:
+			{
+				if (OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::Any)
+				{
+					GrabStat = EIF_GrabStat::Secondary;
+					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
+					return true;
+				}
+				else if(OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::AlwaysMainHand)
+				{
+					GrabStat = EIF_GrabStat::Secondary;
+					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
+					return true;
+				}
+				else // Secondary, 2个副手, 不能抓取
+					{
+					break;
+					}
+			}
+			default:
+				break;
 		}
-		else
-		{
-			GrabStat = EIF_GrabStat::Secondary;
-		}
-		if (GrabStat == OtherGrabTargetComponent->GrabStat || OtherGrabTargetComponent->OtherGrabTargetComponent == nullptr)
-		{
-			OtherGrabTargetComponent->NotifyGrabComponentUpdate();
-		}
+		
+	
 	}
 	else
 	{
-		GrabStat = EIF_GrabStat::Main;
+		if (GrabRule != EIF_VRGrabRule::AlwaysSecondaryHand)
+		{
+			GrabStat = EIF_GrabStat::Main;
+			return true;
+		}
 	}
+	return false;
 }
 
 bool UIF_GrabTargetComponent::HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp)
@@ -114,7 +201,7 @@ bool UIF_GrabTargetComponent::HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent
 	{
 		if (UIF_GrabTargetComponent* Target = Cast<UIF_GrabTargetComponent>(C))
 		{
-			if (Target->GrabStat != EIF_GrabStat::None)
+			if (Target->GrabStat != EIF_GrabStat::None && Target->GrabStat != EIF_GrabStat::MarkForRelease)
 			{
 				OtherComp = Target;
 				return true;
@@ -125,9 +212,17 @@ bool UIF_GrabTargetComponent::HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent
 	return false;
 }
 
-void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation()
+void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation(UIF_GrabTargetComponent* OtherComp, EIF_GrabStat GivenStat)
 {
-	RefreshGrabStat();
+	if (OtherComp)
+	{
+		OtherGrabTargetComponent = OtherComp;
+		GrabStat = GivenStat;
+	}
+	else
+	{
+		RefreshGrabStat();
+	}
 }
 
 void UIF_GrabTargetComponent::BeRelease_Implementation()
@@ -147,11 +242,12 @@ bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* Sou
 	{
 		return false;
 	}
-	RefreshGrabStat();
-	bIsGrab = true;
-	GrabSourceComponent = SourceComponent;
-
-
+	if (RefreshGrabStat())
+	{
+		bIsGrab = true;
+		GrabSourceComponent = SourceComponent;
+		return true;
+	}
 	
 	return false;
 }

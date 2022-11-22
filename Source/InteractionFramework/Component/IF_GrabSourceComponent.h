@@ -46,8 +46,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	float GrabSpeed = 100.f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	EIF_2HandGrabMainHandRightAxis MainHandRightAxis = EIF_2HandGrabMainHandRightAxis::Z;
+
 
 	UPROPERTY(BlueprintReadWrite)
 	AActor* GrabedActor = nullptr;
