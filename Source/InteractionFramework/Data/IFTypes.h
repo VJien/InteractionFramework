@@ -87,6 +87,13 @@ enum class EIF_VRHandType: uint8
 };
 
 
+UENUM(BlueprintType)
+enum class EIF_2HandGrabMainHandRightAxis: uint8
+{
+	X,
+	Y,
+	Z,
+};
 
 
 

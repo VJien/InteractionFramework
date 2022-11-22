@@ -3,7 +3,9 @@
 
 #include "IF_GrabTargetComponent.h"
 
+#include "Kismet/KismetMathLibrary.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
 // Sets default values for this component's properties
 UIF_GrabTargetComponent::UIF_GrabTargetComponent()
 {
@@ -30,19 +32,67 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
                                             FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (bIsGrab && GrabStat == EIF_GrabStat::Main)
+	if (bIsGrab && GrabStat == EIF_GrabStat::Main && GrabSourceComponent)
 	{
-		
+		if (OtherGrabTargetComponent)
+		{
+			FVector OtherLoc = OtherGrabTargetComponent->GrabSourceComponent->GetComponentLocation();
+			FTransform SourceTrans =  GrabSourceComponent->GetComponentTransform();
+			FVector Dir = OtherLoc - SourceTrans.GetLocation();
+			Dir.Normalize();
+			FVector Y;
+			if (GrabSourceComponent->MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::X)
+			{
+				Y = UKismetMathLibrary::GetForwardVector(SourceTrans.Rotator());
+			}
+			else if (GrabSourceComponent->MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Y)
+			{
+				Y = UKismetMathLibrary::GetRightVector(SourceTrans.Rotator());
+			}
+			else
+			{
+				Y = UKismetMathLibrary::GetUpVector(SourceTrans.Rotator());
+			}
+			
+			FRotator TargetRot = UKismetMathLibrary::MakeRotFromXY(Dir, Y);
+			
+			FTransform OwnerTransform = GetOwner()->GetActorTransform();
+			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
+			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
+			TargetTransform.SetRotation(TargetRot.Quaternion());
+			
+			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,GrabSourceComponent->GrabSpeed);
+			GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
+		}
+		else
+		{
+			FTransform OwnerTransform = GetOwner()->GetActorTransform();
+			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
+			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
+			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,GrabSourceComponent->GrabSpeed);
+			GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
+		}
 	}
 	// ...
 }
 
 void UIF_GrabTargetComponent::RefreshGrabStat()
 {
-	UIF_GrabTargetComponent* OtherComp = nullptr;
-	if (HasAnyOtherComponentBeGrab(OtherComp))
+	if (HasAnyOtherComponentBeGrab(OtherGrabTargetComponent))
 	{
-		GrabStat = OtherComp->GrabPriority < GrabPriority? EIF_GrabStat::Secondary : EIF_GrabStat::Main;
+		//当前的比其他的优先级高
+		if (GrabPriority < OtherGrabTargetComponent->GrabPriority )
+		{
+			GrabStat = EIF_GrabStat::Main;
+		}
+		else
+		{
+			GrabStat = EIF_GrabStat::Secondary;
+		}
+		if (GrabStat == OtherGrabTargetComponent->GrabStat || OtherGrabTargetComponent->OtherGrabTargetComponent == nullptr)
+		{
+			OtherGrabTargetComponent->NotifyGrabComponentUpdate();
+		}
 	}
 	else
 	{
@@ -52,9 +102,12 @@ void UIF_GrabTargetComponent::RefreshGrabStat()
 
 bool UIF_GrabTargetComponent::HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp)
 {
-	auto TargetComps = GetOwner()->GetComponentsByClass(UIF_GrabTargetComponent::StaticClass());
+	TArray<UIF_GrabTargetComponent*> TargetComps;
+	GetOwner()->GetComponents<UIF_GrabTargetComponent>(TargetComps);
+	TargetComps.Remove(this);
 	if (TargetComps.Num() == 0)
 	{
+		OtherComp = nullptr;
 		return false;
 	}
 	for (auto C : TargetComps)
@@ -68,6 +121,7 @@ bool UIF_GrabTargetComponent::HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent
 			}
 		}
 	}
+	OtherComp = nullptr;
 	return false;
 }
 
@@ -78,7 +132,13 @@ void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation()
 
 void UIF_GrabTargetComponent::BeRelease_Implementation()
 {
-	
+	bIsGrab = false;
+	GrabStat = EIF_GrabStat::None;
+	if (OtherGrabTargetComponent)
+	{
+		OtherGrabTargetComponent->NotifyGrabComponentUpdate();
+	}
+	OtherGrabTargetComponent = nullptr;
 }
 
 bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* SourceComponent, float Duration)
@@ -89,7 +149,11 @@ bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* Sou
 	}
 	RefreshGrabStat();
 	bIsGrab = true;
+	GrabSourceComponent = SourceComponent;
+
+
 	
 	return false;
 }
 
+PRAGMA_ENABLE_OPTIMIZATION

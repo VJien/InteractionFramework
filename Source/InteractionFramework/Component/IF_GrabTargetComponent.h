@@ -34,11 +34,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-
+protected:
 	UFUNCTION(BlueprintCallable)
 	void RefreshGrabStat();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp);
+public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, float Duration = 0);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -46,16 +47,20 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void NotifyGrabComponentUpdate();
 
-
-	
+	UPROPERTY(BlueprintReadWrite)
+	UIF_GrabSourceComponent* GrabSourceComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsGrab = false;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite)
 	UIF_GrabTargetComponent* OtherGrabTargetComponent = nullptr;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite)
 	EIF_GrabStat GrabStat = EIF_GrabStat::None;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	int32 GrabPriority = 0;
+
+
+	
 
 	
 };

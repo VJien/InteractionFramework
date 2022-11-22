@@ -36,6 +36,18 @@ void UIF_GrabSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
+void UIF_GrabSourceComponent::Release_Implementation()
+{
+	if (MatchedTargetCompoennt)
+	{
+		MatchedTargetCompoennt->BeRelease();
+	}
+	OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt);
+	MatchedTargetCompoennt = nullptr;
+	GrabedActor = nullptr;
+	
+}
+
 bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, float Duration, FName Tag)
 {
 	if (!TargetActor)
@@ -71,13 +83,11 @@ bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, float Dur
 	{
 		return false;
 	}
-	MatchedTargetCompoennt->BeGrab(this,Duration);
-
-
-
-
-
-
+	if (MatchedTargetCompoennt->BeGrab(this,Duration))
+	{
+		GrabedActor = TargetActor;
+		OnGrab.Broadcast(TargetActor, MatchedTargetCompoennt);
+	}
 	
 	
 	return false;
