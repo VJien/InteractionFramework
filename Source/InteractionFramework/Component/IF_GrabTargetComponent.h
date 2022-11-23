@@ -61,6 +61,10 @@ public:
 	//优先级, 越小越优先!!
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	int32 GrabPriority = 0;
+	//方向优先级, 双手抓取的时候, 越小越靠前!! 因为并非主手一定是靠后的那只手
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	int32 DirectionPriority = 0;
+	//主手右侧方向轴, 用于决定双手抓握时的Roll
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_2HandGrabMainHandRightAxis MainHandRightAxis = EIF_2HandGrabMainHandRightAxis::Z;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)

@@ -94,6 +94,10 @@ enum class EIF_2HandGrabMainHandRightAxis: uint8
 	X,
 	Y,
 	Z,
+	NegX,
+	NegY,
+	NegZ,
+	Lock
 };
 
 UENUM(BlueprintType)

@@ -70,23 +70,49 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		{
 			FVector OtherLoc = OtherGrabTargetComponent->GrabSourceComponent->GetComponentLocation();
 			FTransform SourceTrans =  GrabSourceComponent->GetComponentTransform();
-			FVector Dir = OtherLoc - SourceTrans.GetLocation();
-			Dir.Normalize();
-			FVector Y;
-			if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::X)
+			int32 DirScaleByPriority = 1;
+			if (OtherGrabTargetComponent->DirectionPriority > DirectionPriority)
 			{
-				Y = UKismetMathLibrary::GetForwardVector(SourceTrans.Rotator());
+				DirScaleByPriority = -1;
 			}
-			else if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Y)
+			FVector Dir = (OtherLoc - SourceTrans.GetLocation()) * DirScaleByPriority;
+			Dir.Normalize();
+			
+			FRotator TargetRot;
+			if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Lock)
 			{
-				Y = UKismetMathLibrary::GetRightVector(SourceTrans.Rotator());
+				TargetRot = UKismetMathLibrary::MakeRotFromXZ(Dir, FVector(0,0,1));
 			}
 			else
 			{
-				Y = UKismetMathLibrary::GetUpVector(SourceTrans.Rotator());
+				FVector Y;
+				if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::X)
+				{
+					Y = UKismetMathLibrary::GetForwardVector(SourceTrans.Rotator());
+				}
+				else if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Y)
+				{
+					Y = UKismetMathLibrary::GetRightVector(SourceTrans.Rotator());
+				}
+				else if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Z)
+				{
+					Y = UKismetMathLibrary::GetUpVector(SourceTrans.Rotator());
+				}
+				else if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::NegX)
+				{
+					Y = UKismetMathLibrary::GetForwardVector(SourceTrans.Rotator()) * -1;
+				}
+				else if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::NegY)
+				{
+					Y = UKismetMathLibrary::GetRightVector(SourceTrans.Rotator()) * -1;
+				}
+				else
+				{
+					Y = UKismetMathLibrary::GetUpVector(SourceTrans.Rotator()) * -1;
+				}
+				TargetRot = UKismetMathLibrary::MakeRotFromXY(Dir, Y);
 			}
 			
-			FRotator TargetRot = UKismetMathLibrary::MakeRotFromXY(Dir, Y);
 			
 			FTransform OwnerTransform = GetOwner()->GetActorTransform();
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
