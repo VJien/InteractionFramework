@@ -3,6 +3,7 @@
 
 #include "IF_GrabTargetComponent.h"
 
+#include "IF_GrabSourceComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 PRAGMA_DISABLE_OPTIMIZATION
@@ -25,7 +26,38 @@ void UIF_GrabTargetComponent::BeginPlay()
 	// ...
 	
 }
+#if WITH_EDITOR
+void UIF_GrabTargetComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	if (PropertyChangedEvent.Property->GetFName() ==  GET_MEMBER_NAME_CHECKED(ThisClass, HandType))
+	{
+		FName TagName = NAME_None;
+		if (HandType == EIF_VRHandType::Left)
+		{
+			TagName = TEXT("Left");
+			ComponentTags.Remove( TEXT("Right"));
+		}
+		else if (HandType == EIF_VRHandType::Right)
+		{
+			TagName = TEXT("Right");
+			ComponentTags.Remove( TEXT("Left"));
+		}
+		else
+		{
+			ComponentTags.Remove( TEXT("Right"));
+			ComponentTags.Remove( TEXT("Left"));
+		}
+		
+		
+		if (TagName != NAME_None && !ComponentTags.Contains(TagName))
+		{
+			ComponentTags.Emplace(TagName);
+		}
+	}
+}
 
+#endif
 
 // Called every frame
 void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -60,8 +92,17 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
 			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
 			TargetTransform.SetRotation(TargetRot.Quaternion());
-			
-			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,GrabSourceComponent->GrabSpeed);
+		
+			if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
+			{
+				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMin, DeltaTime, GrabSpeedInterp);
+			}
+			else
+			{
+				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMax, DeltaTime, GrabSpeedInterp);
+			}
+		
+			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,CurrGrabSpeed);
 			GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
 		}
 		else
@@ -69,7 +110,17 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			FTransform OwnerTransform = GetOwner()->GetActorTransform();
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
 			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
-			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,GrabSourceComponent->GrabSpeed);
+			float Scale = 1;
+			if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
+			{
+				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMin, DeltaTime, GrabSpeedInterp);
+			}
+			else
+			{
+				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMax, DeltaTime, GrabSpeedInterp);
+			}
+			
+			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,CurrGrabSpeed);
 			GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
 		}
 	}
@@ -236,7 +287,7 @@ void UIF_GrabTargetComponent::BeRelease_Implementation()
 	OtherGrabTargetComponent = nullptr;
 }
 
-bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* SourceComponent, float Duration)
+bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* SourceComponent, EIF_GrabStat& OutStat)
 {
 	if (!SourceComponent)
 	{
@@ -246,6 +297,7 @@ bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* Sou
 	{
 		bIsGrab = true;
 		GrabSourceComponent = SourceComponent;
+		OutStat = GrabStat;
 		return true;
 	}
 	

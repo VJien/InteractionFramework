@@ -55,6 +55,15 @@ enum class EIF_VRInteractionInputType: uint8
 };
 
 
+UENUM(BlueprintType)
+enum class EIF_GrabStat: uint8
+{
+	None = 0,
+	Main = 1,
+	Secondary = 2,
+	MarkForRelease = 3,
+};
+
 
 UENUM(BlueprintType)
 enum class EIF_VRMoveDirection: uint8

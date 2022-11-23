@@ -25,7 +25,14 @@ void UIF_GrabSourceComponent::BeginPlay()
 	// ...
 	
 }
+#if WITH_EDITOR
+void UIF_GrabSourceComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	
+}
 
+#endif
 
 // Called every frame
 void UIF_GrabSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -36,25 +43,44 @@ void UIF_GrabSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
+bool UIF_GrabSourceComponent::HasGrabActor_Implementation()
+{
+	return GrabedActor != nullptr;
+}
+
+AActor* UIF_GrabSourceComponent::GetGrabedActor_Implementation()
+{
+	return GrabedActor;
+}
+
 void UIF_GrabSourceComponent::Release_Implementation()
 {
 	if (MatchedTargetCompoennt)
 	{
 		MatchedTargetCompoennt->BeRelease();
 	}
-	OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt);
+	OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt, MatchedTargetCompoennt->GrabStat);
 	MatchedTargetCompoennt = nullptr;
 	GrabedActor = nullptr;
 	
 }
 
-bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, float Duration, FName Tag)
+bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat)
 {
 	if (!TargetActor)
 	{
 		return false;
 	}
-	auto MatchedComps = TargetActor->GetComponentsByTag(UIF_GrabTargetComponent::StaticClass(), Tag);
+	FName CompTag = Tag;
+	if (Hand == EIF_VRHandType::Left)
+	{
+		CompTag = TEXT("Left");
+	}
+	else if(Hand == EIF_VRHandType::Right)
+	{
+		CompTag = TEXT("Right");
+	}
+	auto MatchedComps = TargetActor->GetComponentsByTag(UIF_GrabTargetComponent::StaticClass(), CompTag);
 	if (MatchedComps.Num() == 0)
 	{
 		return false;
@@ -83,13 +109,13 @@ bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, float Dur
 	{
 		return false;
 	}
-	if (MatchedTargetCompoennt->BeGrab(this,Duration))
+	if (MatchedTargetCompoennt->BeGrab(this,OutStat))
 	{
 		GrabedActor = TargetActor;
-		OnGrab.Broadcast(TargetActor, MatchedTargetCompoennt);
+		OnGrab.Broadcast(TargetActor, MatchedTargetCompoennt,MatchedTargetCompoennt->GrabStat);
 	}
 	
 	
-	return false;
+	return true;
 }
 

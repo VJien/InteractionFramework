@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent), Blueprintable, BlueprintType)
 class INTERACTIONFRAMEWORK_API UIF_SceneComponent : public USceneComponent
 {
 	GENERATED_BODY()

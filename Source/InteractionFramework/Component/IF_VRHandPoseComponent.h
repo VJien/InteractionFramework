@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "IF_ActorComponent.generated.h"
+#include "IF_VRHandPoseComponent.generated.h"
 
 
-UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent), Blueprintable, BlueprintType)
-class INTERACTIONFRAMEWORK_API UIF_ActorComponent : public UActorComponent
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class INTERACTIONFRAMEWORK_API UIF_VRHandPoseComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UIF_ActorComponent();
+	UIF_VRHandPoseComponent();
 
 protected:
 	// Called when the game starts
@@ -24,4 +24,6 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+	
 };

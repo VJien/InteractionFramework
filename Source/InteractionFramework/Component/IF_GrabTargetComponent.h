@@ -3,20 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IF_GrabSourceComponent.h"
+
 #include "Components/ActorComponent.h"
+#include "InteractionFramework/Data/IFTypes.h"
 #include "IF_GrabTargetComponent.generated.h"
 
 
-UENUM(BlueprintType)
-enum class EIF_GrabStat: uint8
-{
-	None = 0,
-	Main = 1,
-	Secondary = 2,
-	MarkForRelease = 3,
-};
-
+class UIF_GrabSourceComponent;
 
 UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent), BlueprintType, Blueprintable)
 class INTERACTIONFRAMEWORK_API UIF_GrabTargetComponent : public USceneComponent
@@ -30,7 +23,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -42,7 +37,7 @@ protected:
 	bool HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp);
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, float Duration = 0);
+	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, EIF_GrabStat& OutStat);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BeRelease();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -57,7 +52,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	EIF_GrabStat GrabStat = EIF_GrabStat::None;
 
-	
+	//哪只手抓取
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	EIF_VRHandType HandType = EIF_VRHandType::None;
 	//抓取方式
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_VRGrabRule GrabRule = EIF_VRGrabRule::Any;
@@ -66,8 +63,18 @@ public:
 	int32 GrabPriority = 0;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_2HandGrabMainHandRightAxis MainHandRightAxis = EIF_2HandGrabMainHandRightAxis::Z;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	float GrabSpeedMax = 50.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	float GrabSpeedMin = 1.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	float GrabSpeedInterp = 1.0f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	float GrabTransitionTolerance = 2.0f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	float GrabRotationTolerance = 2.0f;
 
 	
 
-	
+	float CurrGrabSpeed = 50.f;
 };

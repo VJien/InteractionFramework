@@ -3,13 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "InteractionFramework/Data/IFTypes.h"
 
 #include "IF_GrabSourceComponent.generated.h"
 
+
 class UIF_GrabTargetComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FIF_OnGrabEvent, AActor*, GrabActor, UIF_GrabTargetComponent*, TargetComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FIF_OnGrabEvent, AActor*, GrabActor, UIF_GrabTargetComponent*, TargetComponent, EIF_GrabStat, Stat);
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FIF_OnReleaseEvent);
 
 UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
@@ -25,6 +27,10 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+	
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -32,28 +38,40 @@ public:
 
 
 
-	
+	//如果Hand == None, 那么根据Tag匹配
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool Grab(AActor* TargetActor, float Duration, FName Tag);
+	bool Grab(AActor* TargetActor,EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Release();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	bool bMainHand = false;
-
-	UPROPERTY(BlueprintReadWrite)
-	UIF_GrabTargetComponent* MatchedTargetCompoennt = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	float GrabSpeed = 100.f;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)
+	AActor* GetGrabedActor();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)
+	bool HasGrabActor();
+	
+	
+	
 
 
+protected:
 	UPROPERTY(BlueprintReadWrite)
 	AActor* GrabedActor = nullptr;
+	UPROPERTY(BlueprintReadWrite)
+	UIF_GrabTargetComponent* MatchedTargetCompoennt = nullptr;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	EIF_VRHandType HandType = EIF_VRHandType::None;
+	
 
-
+	
+public:
+	
 	UPROPERTY(BlueprintAssignable)
 	FIF_OnGrabEvent OnGrab;
 	UPROPERTY(BlueprintAssignable)
 	FIF_OnGrabEvent OnRelease;
+	
+	
+		
+	
+
 };
