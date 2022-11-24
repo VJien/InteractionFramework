@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "UObject/Object.h"
 #include "IFTypes.generated.h"
 
@@ -108,14 +109,95 @@ enum class EIF_VRGrabRule: uint8
 	AlwaysSecondaryHand,
 };
 
+UENUM(BlueprintType)
+enum class EIF_VRHMDType: uint8
+{
+	None,
+	SteamVR_Vive,
+	SteamVR_Index,
+	SteamVR_Cosmos,
+	Meta_Rift,
+	Meta_Quest,
+	WindowsVR,
+	PSVR,
+	Pico4
+};
 
+UENUM(BlueprintType)
+enum class EIF_HandFingerType: uint8
+{
+	None,
+	Thumbstick,
+	Index,
+	Middle,
+	Ring,
+	Pinky,
+
+};
+
+
+USTRUCT(BlueprintType)
+struct FIF_VRHandFingerData
+{
+	GENERATED_BODY()
+public:
+	bool IsNealyEqual(FIF_VRHandFingerData Other, float BlendTolerance = 0.01, float RotationTolerance = 0.01);
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ClampMax = 1,ClampMin=0))
+	float GrabBlend = 0;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FRotator Rotation_Joint1 = FRotator::ZeroRotator;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FRotator Rotation_Joint2 = FRotator::ZeroRotator;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FRotator Rotation_Joint3 = FRotator::ZeroRotator;
+};
+USTRUCT(BlueprintType)
+struct FIF_VRHandPoseData: public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FIF_VRHandFingerData Thumbstick;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FIF_VRHandFingerData Index;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FIF_VRHandFingerData Middle;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FIF_VRHandFingerData Ring;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FIF_VRHandFingerData Pinky;
+};
+
+USTRUCT(BlueprintType)
+struct FIF_VRHandMeshPosition
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FVector Location_Left = FVector::ZeroVector;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FRotator Rotation_Left = FRotator::ZeroRotator;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FVector Location_Right = FVector::ZeroVector;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FRotator Rotation_Right = FRotator::ZeroRotator;
+};
+
+UCLASS(BlueprintType)
+class UIF_VRHandMeshPositionData: public UDataAsset
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_VRHMDType, FIF_VRHandMeshPosition> Data;
+};
 
 
 UCLASS(BlueprintType, Blueprintable, Config = Game, Abstract,EditInlineNew)
 class UIF_InputTypeConfig : public UObject
 {
 	GENERATED_BODY()
-	
 };
 
 UCLASS(BlueprintType, Blueprintable, Config = Game, Abstract,EditInlineNew)
