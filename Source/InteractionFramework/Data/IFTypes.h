@@ -98,6 +98,7 @@ enum class EIF_2HandGrabMainHandRightAxis: uint8
 	NegX,
 	NegY,
 	NegZ,
+	Custom,
 	Lock
 };
 

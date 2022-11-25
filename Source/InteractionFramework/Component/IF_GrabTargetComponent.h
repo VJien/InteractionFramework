@@ -35,6 +35,8 @@ protected:
 	bool RefreshGrabStat();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp);
+	UFUNCTION(BlueprintCallable)
+	void SetCustomRightDirectionComponent(USceneComponent* Component);
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, EIF_GrabStat& OutStat);
@@ -51,32 +53,48 @@ public:
 	UIF_GrabTargetComponent* OtherGrabTargetComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
 	EIF_GrabStat GrabStat = EIF_GrabStat::None;
-
+	UPROPERTY(BlueprintReadWrite)
+	USceneComponent* RightDirectionComponent = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bDebug = false;
 	//哪只手抓取
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_VRHandType HandType = EIF_VRHandType::None;
 	//抓取方式
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_VRGrabRule GrabRule = EIF_VRGrabRule::Any;
-	//优先级, 越小越优先!!
+	//主手优先级, 越小越优先为主手!!
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	int32 GrabPriority = 0;
 	//方向优先级, 双手抓取的时候, 越小越靠前!! 因为并非主手一定是靠后的那只手
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	int32 DirectionPriority = 0;
-	//主手右侧方向轴, 用于决定双手抓握时的Roll
+	/*
+	 *主手右侧方向轴, 用于决定双手抓握时的Roll
+	 * 如果是Lock, 那么Roll固定
+	 * 如果是Custom, 那么需要调用SetCustomRightDirectionComponent()设置方向组件
+	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_2HandGrabMainHandRightAxis MainHandRightAxis = EIF_2HandGrabMainHandRightAxis::Z;
+	//是否平滑抓取, 如果false, 那么即武器跟手保持位置一致(缺点是, 手的抖动会无差别反馈到武器上)
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bSmoothGrab = true;
+	//平滑抓取的最大速度, 在快速移动的时候会接近于这个速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabSpeedMax = 50.f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	//平滑抓取的最小速度, 在接近静止的时候会接近于这个速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabSpeedMin = 1.f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	//最大速度和最小速度过渡的速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabSpeedInterp = 1.0f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	//位置变化如果小于此(同时也要满足旋转变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabTransitionTolerance = 2.0f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	//旋转变化如果小于此(同时也要满足位置变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationTolerance = 2.0f;
+
 
 	
 

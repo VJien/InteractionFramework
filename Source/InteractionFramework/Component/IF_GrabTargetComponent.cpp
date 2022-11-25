@@ -75,13 +75,30 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			{
 				DirScaleByPriority = -1;
 			}
-			FVector Dir = (OtherLoc - SourceTrans.GetLocation()) * DirScaleByPriority;
+			//两手的方向
+			FVector V0 = (OtherGrabTargetComponent->GetComponentLocation() - GetComponentLocation())* DirScaleByPriority;
+			V0.Normalize();
+			//武器自身朝向
+			FVector V1 = GetOwner()->GetActorForwardVector();
+			//武器中的2个抓取点的朝向
+        	FVector V2 = (OtherLoc - SourceTrans.GetLocation()) * DirScaleByPriority;
+        	V2.Normalize();
+			//两个抓取点与武器自身朝向的夹角, 后面需要补偿回来
+			float Angle = UKismetMathLibrary::DegAcos(V1 | V2);
+        	FVector Dir = UKismetMathLibrary::RotateAngleAxis(V0, Angle, V1 ^ V2);
 			Dir.Normalize();
-			
+			if (bDebug)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Angle =%f, Dir = %s"), Angle, *Dir.ToString())
+			}
 			FRotator TargetRot;
 			if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Lock)
 			{
 				TargetRot = UKismetMathLibrary::MakeRotFromXZ(Dir, FVector(0,0,1));
+			}
+			else if(MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Custom && RightDirectionComponent)
+			{
+				TargetRot = UKismetMathLibrary::MakeRotFromXY(Dir, RightDirectionComponent->GetForwardVector());
 			}
 			else
 			{
@@ -113,41 +130,69 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				TargetRot = UKismetMathLibrary::MakeRotFromXY(Dir, Y);
 			}
 			
-			
+			if (bDebug)
+			{
+				UE_LOG(LogTemp, Log, TEXT("TargetRot = %s"), *TargetRot.ToString())
+			}
 			FTransform OwnerTransform = GetOwner()->GetActorTransform();
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
 			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
 			TargetTransform.SetRotation(TargetRot.Quaternion());
-		
-			if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
+			if (bSmoothGrab)
 			{
-				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMin, DeltaTime, GrabSpeedInterp);
+				if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
+				{
+					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMin, DeltaTime, GrabSpeedInterp);
+				}
+				else
+				{
+					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMax, DeltaTime, GrabSpeedInterp);
+				}
+				if (bDebug)
+				{
+					UE_LOG(LogTemp, Log, TEXT("OwnerTransform = %s, TargetTransform = %s"), *OwnerTransform.ToString(), *TargetTransform.ToString())
+				}
+				const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,CurrGrabSpeed);
+				if (bDebug)
+				{
+					UE_LOG(LogTemp, Log, TEXT("CurrTransform = %s"), *CurrTransform.ToString())
+				}
+				GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
 			}
 			else
 			{
-				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMax, DeltaTime, GrabSpeedInterp);
+				if (bDebug)
+				{
+					UE_LOG(LogTemp, Log, TEXT("OwnerTransform = %s, TargetTransform = %s"), *OwnerTransform.ToString(), *TargetTransform.ToString())
+				}
+				GetOwner()->SetActorLocationAndRotation(TargetTransform.GetLocation(),TargetRot);
 			}
 		
-			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,CurrGrabSpeed);
-			GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
 		}
-		else
+		else // 单手抓取
 		{
 			FTransform OwnerTransform = GetOwner()->GetActorTransform();
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
 			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
-			float Scale = 1;
-			if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
+			if (bSmoothGrab)
 			{
-				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMin, DeltaTime, GrabSpeedInterp);
+				if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
+				{
+					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMin, DeltaTime, GrabSpeedInterp);
+				}
+				else
+				{
+					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMax, DeltaTime, GrabSpeedInterp);
+				}
+			
+				const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,CurrGrabSpeed);
+				GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
 			}
 			else
 			{
-				CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedMax, DeltaTime, GrabSpeedInterp);
+				GetOwner()->SetActorLocationAndRotation(TargetTransform.GetLocation(),TargetTransform.GetRotation());
 			}
-			
-			const FTransform CurrTransform = UKismetMathLibrary::TInterpTo(OwnerTransform, TargetTransform,DeltaTime,CurrGrabSpeed);
-			GetOwner()->SetActorLocationAndRotation(CurrTransform.GetLocation(),CurrTransform.GetRotation());
+		
 		}
 	}
 	// ...
@@ -287,6 +332,11 @@ bool UIF_GrabTargetComponent::HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent
 	}
 	OtherComp = nullptr;
 	return false;
+}
+
+void UIF_GrabTargetComponent::SetCustomRightDirectionComponent(USceneComponent* Component)
+{
+	RightDirectionComponent = Component;
 }
 
 void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation(UIF_GrabTargetComponent* OtherComp, EIF_GrabStat GivenStat)
