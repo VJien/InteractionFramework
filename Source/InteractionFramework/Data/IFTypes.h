@@ -183,6 +183,10 @@ public:
 	FVector Location_Right = FVector::ZeroVector;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FRotator Rotation_Right = FRotator::ZeroRotator;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FVector Location_Aim = FVector::ZeroVector;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FRotator Rotation_Aim = FRotator::ZeroRotator;
 };
 
 UCLASS(BlueprintType)
