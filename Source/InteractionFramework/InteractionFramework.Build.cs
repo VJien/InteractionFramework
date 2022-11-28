@@ -39,7 +39,11 @@ public class InteractionFramework : ModuleRules
 				"Slate",
 				"SlateCore",
 				"InputCore",
-				"NavigationSystem"
+				"NavigationSystem",
+				"HeadMountedDisplay", 
+				"OpenVR", 
+				"RenderCore",
+				"RHI",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -78,6 +78,7 @@ inline void UIF_VR_MoveComponent::Init_Implementation(FIF_VRMoveData InitData)
 	MovementComponent = InitData.MovementComponent;
 	TraceAimComponent = InitData.TraceAimComponent;
 	Camera = InitData.Camera;
+	MoveDirectionComponent = InitData.MoveDirectionComponent;
 	
 }
 
@@ -206,27 +207,30 @@ void UIF_VR_MoveComponent::MoveCharacter_Implementation(float Fwd, float Right)
 	{
 	case EIF_VRMoveDirection::Camera:
 		{
-			FVector Direction =Camera->GetForwardVector() * Fwd + Camera->GetRightVector() * Right;
+			FVector Direction = Camera->GetForwardVector() * Fwd + Camera->GetRightVector() * Right;
 			if (bKeepHorizonDirection)
 			{
 				Direction.Z = 0;
 				Direction.Normalize();
 			}
+			Direction.Normalize();
 			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
+			break;
 		}
 	case EIF_VRMoveDirection::CustomAimComponent:
 		{
-			if (!TraceAimComponent)
+			if (!MoveDirectionComponent)
 			{
 				return;
 			}
-			FVector Direction = TraceAimComponent->GetForwardVector() * Fwd + TraceAimComponent->GetRightVector() * Right;
+			FVector Direction = MoveDirectionComponent->GetForwardVector() * Fwd + MoveDirectionComponent->GetRightVector() * Right;
 			if (bKeepHorizonDirection)
 			{
 				Direction.Z = 0;
 				Direction.Normalize();
 			}
 			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
+			break;
 		}
 		default:
 			break;

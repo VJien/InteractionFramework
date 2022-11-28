@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractionFramework/Input/IF_InputManager.h"
 #include "InteractionFramework/SceneItem/IF_VR_TraceVisual.h"
 
 #include "IFSetting.generated.h"
@@ -27,5 +28,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Pool", Config)
 	TSoftClassPtr<AIF_VR_TraceVisual> TraceVisual;
-	
+
+	UPROPERTY(EditAnywhere, Category="Pool", Config)
+	TSoftClassPtr<UIF_InputManager> InputManager = nullptr;
 };

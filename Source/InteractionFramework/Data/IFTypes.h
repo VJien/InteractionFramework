@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "GameFramework/PlayerInput.h"
 #include "UObject/Object.h"
 #include "IFTypes.generated.h"
 
@@ -113,15 +114,20 @@ enum class EIF_VRGrabRule: uint8
 UENUM(BlueprintType)
 enum class EIF_VRHMDType: uint8
 {
-	None,
-	SteamVR_Vive,
-	SteamVR_Index,
-	SteamVR_Cosmos,
-	Meta_Rift,
-	Meta_Quest,
-	WindowsVR,
+
+	SteamVR,
+	ValveIndex,
+	Vive,
+	ViveCosmos,
+	ViveFocus,
+	ViveFocus3,
+	OculusQuestHMD,
+	OculusHMD,
+	WindowsMR,
+	PicoNeo3,
+	PicoNeo4,
 	PSVR,
-	Pico4
+	Unknown
 };
 
 UENUM(BlueprintType)
@@ -280,3 +286,19 @@ public:
 	TEnumAsByte<EInputEvent> KeyEvent;
 	
 };
+
+
+
+
+UCLASS(ClassGroup=InteractionFramework, config=Game)
+class UIF_InputConfig : public UDataAsset
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<FInputActionKeyMapping> ActionMapping;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<FInputAxisKeyMapping> AxisMapping;
+};
+
+

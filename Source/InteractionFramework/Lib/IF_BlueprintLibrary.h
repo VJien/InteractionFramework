@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractionFramework/Data/IFTypes.h"
 #include "UObject/Object.h"
 #include "IF_BlueprintLibrary.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class INTERACTIONFRAMEWORK_API UIF_BlueprintLibrary : public UBlueprintFunctionLibrary
 {
@@ -23,5 +22,10 @@ public:
 	static bool IsEditorMode(UObject* WorldContext);
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf = "WorldContext", HidePin = "WorldContext"))
 	static bool IsGameMode(UObject* WorldContext);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf = "WorldContext", HidePin = "WorldContext"))
+	static EIF_VRHMDType GetHMDType();
+
+
 };
 

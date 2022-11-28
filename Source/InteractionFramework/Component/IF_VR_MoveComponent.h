@@ -25,6 +25,8 @@ public:
 	USceneComponent* TraceAimComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
 	UCameraComponent* Camera = nullptr;
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	USceneComponent* MoveDirectionComponent = nullptr;
 	
 };
 
@@ -53,6 +55,8 @@ public:
 	UCharacterMovementComponent* MovementComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
 	USceneComponent* TraceAimComponent = nullptr;
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	USceneComponent* MoveDirectionComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
 	UCameraComponent* Camera = nullptr;
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
