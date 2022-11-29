@@ -3,14 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractionFramework/Input/IF_InputManager.h"
+#include "InteractionFramework/Data/IFTypes.h"
 #include "InteractionFramework/SceneItem/IF_VR_TraceVisual.h"
-
 #include "IFSetting.generated.h"
 
-/**
- * 
- */
+
 UCLASS(Config=IFSetting, defaultconfig, DisplayName = "Interaction Framework Setting")
 class INTERACTIONFRAMEWORK_API UIFSetting : public UObject
 {
@@ -29,6 +26,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="Pool", Config)
 	TSoftClassPtr<AIF_VR_TraceVisual> TraceVisual;
 
-	UPROPERTY(EditAnywhere, Category="Pool", Config)
-	TSoftClassPtr<UIF_InputManager> InputManager = nullptr;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly,Config, Category=Input)
+	TMap<EIF_VRHMDType,TSoftObjectPtr<UIF_InputConfig>> InputMapping;
+
 };

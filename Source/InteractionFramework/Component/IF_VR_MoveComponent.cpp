@@ -46,6 +46,8 @@ void UIF_VR_MoveComponent::TurnCharacter_Implementation(float value)
 	}
 }
 
+
+
 bool UIF_VR_MoveComponent::IsValidTeleportLocation(const FHitResult& HitResult, FVector& ProjectLocation)
 {
 	bool bProjectSuccess = UNavigationSystemV1::K2_ProjectPointToNavigation(this,HitResult.ImpactPoint,
@@ -202,7 +204,10 @@ void UIF_VR_MoveComponent::MoveCharacter_Implementation(float Fwd, float Right)
 	{
 		return;
 	}
-	
+	if (Fwd ==0 && Right == 0)
+	{
+		return;
+	}
 	switch (MoveDirection)
 	{
 	case EIF_VRMoveDirection::Camera:
@@ -211,11 +216,9 @@ void UIF_VR_MoveComponent::MoveCharacter_Implementation(float Fwd, float Right)
 			if (bKeepHorizonDirection)
 			{
 				Direction.Z = 0;
-				Direction.Normalize();
 			}
-			Direction.Normalize();
 			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
-			break;
+			return;
 		}
 	case EIF_VRMoveDirection::CustomAimComponent:
 		{
@@ -227,13 +230,95 @@ void UIF_VR_MoveComponent::MoveCharacter_Implementation(float Fwd, float Right)
 			if (bKeepHorizonDirection)
 			{
 				Direction.Z = 0;
-				Direction.Normalize();
 			}
 			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
-			break;
+			return;
 		}
 		default:
 			break;
 	}
 }
 
+void UIF_VR_MoveComponent::MoveCharacterForward_Implementation(float Fwd)
+{
+	if (!VR_Pawn || !MovementComponent)
+	{
+		return;
+	}
+	if (Fwd ==0 )
+	{
+		return;
+	}
+	switch (MoveDirection)
+	{
+	case EIF_VRMoveDirection::Camera:
+		{
+			FVector Direction = Camera->GetForwardVector() * Fwd ;
+			if (bKeepHorizonDirection)
+			{
+				Direction.Z = 0;
+			}
+			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
+			UKismetSystemLibrary::PrintString(this,FString::Printf(TEXT("MoveFwd Dir=%s"),*Direction.ToString()), 1,1);
+			return;
+		}
+	case EIF_VRMoveDirection::CustomAimComponent:
+		{
+			if (!MoveDirectionComponent)
+			{
+				return;
+			}
+			FVector Direction = MoveDirectionComponent->GetForwardVector() * Fwd;
+			if (bKeepHorizonDirection)
+			{
+				Direction.Z = 0;
+				Direction.Normalize();
+			}
+			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
+			return;
+		}
+	default:
+		break;
+	}
+}
+
+void UIF_VR_MoveComponent::MoveCharacterRight_Implementation(float Right)
+{
+	if (!VR_Pawn || !MovementComponent)
+	{
+		return;
+	}
+	if ( Right == 0)
+	{
+		return;
+	}
+	switch (MoveDirection)
+	{
+	case EIF_VRMoveDirection::Camera:
+		{
+			FVector Direction =  Camera->GetRightVector() * Right;
+			if (bKeepHorizonDirection)
+			{
+				Direction.Z = 0;
+			}
+			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
+			return;
+		}
+	case EIF_VRMoveDirection::CustomAimComponent:
+		{
+			if (!MoveDirectionComponent)
+			{
+				return;
+			}
+			FVector Direction = MoveDirectionComponent->GetRightVector() * Right;
+			if (bKeepHorizonDirection)
+			{
+				Direction.Z = 0;
+			}
+			VR_Pawn->AddMovementInput(Direction, MoveSpeedScale);
+			return;
+		}
+	default:
+		break;
+	}
+}

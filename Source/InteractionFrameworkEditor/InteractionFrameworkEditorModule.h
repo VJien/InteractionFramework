@@ -15,5 +15,14 @@ private:
 	void RegisterSettings();
 	void UnregisterSettings();
 	bool HandleSettingsSaved();
+	void RegisterStyleAndCommands();
+	void UnregisterStyleAndCommands();
 
+	void PluginButtonClicked();
+	void RegisterMenus();
+
+	void AddToolBarExtension(FToolBarBuilder& Builder);
+
+private:
+	TSharedPtr<class FUICommandList> PluginCommands;
 };

@@ -2,8 +2,9 @@
 
 
 #include "IFTypes.h"
-
 #include "Kismet/KismetMathLibrary.h"
+
+DEFINE_LOG_CATEGORY(IF_Log)
 
 bool FIF_VRHandFingerData::IsNealyEqual(FIF_VRHandFingerData Other, float BlendTolerance, float RotationTolerance)
 {

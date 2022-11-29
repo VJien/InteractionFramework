@@ -40,7 +40,9 @@ public class InteractionFrameworkEditor : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"Settings",
-				"InteractionFramework"
+				"InteractionFramework",
+				"ToolMenus",
+				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
 		);

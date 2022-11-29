@@ -100,3 +100,13 @@ EIF_VRHMDType UIF_BlueprintLibrary::GetHMDType()
 	return EIF_VRHMDType::Unknown;
 	
 }
+
+FString UIF_BlueprintLibrary::InputTypeToString(EIF_VRInputType InputType)
+{
+	return IFEnumToString<EIF_VRInputType>("EIF_VRInputType",InputType);
+}
+
+EIF_VRInputType UIF_BlueprintLibrary::StringToInputType(FString String)
+{
+	return IFStringToEnum<EIF_VRInputType>("EIF_VRInputType",String);
+}

@@ -8,6 +8,17 @@
 #include "UObject/Object.h"
 #include "IFTypes.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(IF_Log, Log, All);
+
+#define IF_LOG_P(l,...) UE_LOG(IF_Log, Log, TEXT(l), ...)
+#define IF_LOG(l) UE_LOG(IF_Log, Log, TEXT(l))
+#define IF_WARNING_P(l,...) UE_LOG(IF_Log, Warning, TEXT(l), ...)
+#define IF_WARNING(l) UE_LOG(IF_Log, Warning, TEXT(l))
+#define IF_ERROR_P(l,...) UE_LOG(IF_Log, Error, TEXT(l), ...)
+#define IF_ERROR(l) UE_LOG(IF_Log, Error, TEXT(l))
+
+
+
 UENUM(BlueprintType)
 enum class EIF_MoveAxisFunction: uint8
 {
@@ -32,29 +43,7 @@ enum class EIF_VRMovementType: uint8
 	PreJumpCurve,
 	JumpCurve
 };
-UENUM(BlueprintType)
-enum class EIF_VRPlayerAction: uint8
-{
-	None,
-	Move,
-	Grab,
-	Drop,
-};
 
-UENUM(BlueprintType)
-enum class EIF_VRInteractionInputType: uint8
-{
-	None,
-	Trigger,
-	Grip,
-	Thumbstick_X,
-	Thumbstick_Neg_X,
-	Thumbstick_Y,
-	Thumbstick_Neg_Y,
-	Menu_1,
-	Menu_2,
-	System
-};
 
 
 UENUM(BlueprintType)
@@ -288,7 +277,76 @@ public:
 };
 
 
+UENUM(BlueprintType)
+enum class EIF_VRInputType: uint8
+{
+	None,
+	Trigger,
+	Trigger_Touch,
+	Trigger_Axis,
+	Grip,
+	Grip_Touch,
+	Grip_Axis,
+	Menu_1,
+	Menu_1_Touch,
+	Menu_2,
+	Menu_2_Touch,
+	System,
+	Thumbstick_X,
+	Thumbstick_Y,
+	Thumbstick_Left,
+	Thumbstick_Right,
+	Thumbstick_Up,
+	Thumbstick_Down,
+	Thumbstick,
+	Thumbstick_Touch
+};
+UENUM(BlueprintType)
+enum class EIF_VRPlayerBehavior: uint8
+{
+	None,
+	MoveForward,
+	MoveRight,
+	Teleport,
+	Turn,
+	Grab,
+	Release,
+	Menu1,
+	Menu2,
+	Use,
+	Select1,
+	Select2,
+	Custom1,
+	Custom2,
+	Custom3
+};
 
+USTRUCT(BlueprintType)
+struct FIF_InputActionMapping
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<FInputActionKeyMapping> Keys;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	EIF_VRPlayerBehavior Behavior = EIF_VRPlayerBehavior::None;
+	
+	
+};
+USTRUCT(BlueprintType)
+struct FIF_InputAxisMapping
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	EIF_VRInputType Input = EIF_VRInputType::None;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	EIF_VRHandType Hand = EIF_VRHandType::Left;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TArray<FInputAxisKeyMapping> Keys;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	EIF_VRPlayerBehavior Behavior = EIF_VRPlayerBehavior::None;
+	
+};
 
 UCLASS(ClassGroup=InteractionFramework, config=Game)
 class UIF_InputConfig : public UDataAsset
@@ -296,9 +354,27 @@ class UIF_InputConfig : public UDataAsset
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TArray<FInputActionKeyMapping> ActionMapping;
+	TMap<EIF_VRInputType, FIF_InputActionMapping> ActionMapping_Left;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TArray<FInputAxisKeyMapping> AxisMapping;
+	TMap<EIF_VRInputType, FIF_InputActionMapping> ActionMapping_Right;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_VRInputType, FIF_InputAxisMapping>  AxisMapping_Left;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_VRInputType, FIF_InputAxisMapping>  AxisMapping_Right;
 };
 
+
+
+
+UCLASS(ClassGroup=InteractionFramework, config=Game)
+class UIF_VRBehaviorDataAsset : public UDataAsset
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_VRInputType, EIF_VRPlayerBehavior> Left;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_VRInputType, EIF_VRPlayerBehavior> Right;
+
+};
 
