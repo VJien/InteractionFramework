@@ -57,8 +57,10 @@ void UIF_VRBehaviorComponent::InitFunctionMap()
 	BIND_BEHAVIOR(Custom1);
 	BIND_BEHAVIOR(Custom2);
 	BIND_BEHAVIOR(Custom3);
-	BIND_BEHAVIOR(Select1);
-	BIND_BEHAVIOR(Select2);
+	BIND_BEHAVIOR(SelectUp);
+	BIND_BEHAVIOR(SelectDown);
+	BIND_BEHAVIOR(SelectRight);
+	BIND_BEHAVIOR(SelectLeft);
 }
 
 
@@ -71,25 +73,96 @@ void UIF_VRBehaviorComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
-bool UIF_VRBehaviorComponent::AddBehaviorInput(EIF_VRHandType Hand, EIF_VRInputType Input,
-	EIF_VRPlayerBehavior Behavior, int32 Priority, bool bTriggerOnce)
+bool UIF_VRBehaviorComponent::AddExtendBehaviorInput(EIF_VRHandType Hand, EIF_VRInputType Input,
+	EIF_VRPlayerBehavior Behavior, int32 Priority, bool bTriggerOnce, bool bUnique)
 {
 	if (Hand == EIF_VRHandType::None || Input == EIF_VRInputType::None)
 	{
 		return false;
 	}
-	auto& Curr = ProxyMap.FindOrAdd(Input);
+	auto& Curr = ExtendInputMap.FindOrAdd(Input);
 	if (Curr.Num() == 0)
 	{
 		Curr.Emplace(FIF_BehaviorProxy(Priority,Behavior,Hand,bTriggerOnce));
 	}
 	else
 	{
+		if (bUnique && Curr.Contains(FIF_BehaviorProxy(Priority,Behavior,Hand,bTriggerOnce)))
+		{
+			return false;
+		}
 		Curr.Emplace(FIF_BehaviorProxy(Priority,Behavior,Hand,bTriggerOnce));
 		Curr.Sort([](FIF_BehaviorProxy A, FIF_BehaviorProxy B)
 		{
 			return A.Priority < B.Priority;
 		});
+	}
+	return true;
+}
+
+bool UIF_VRBehaviorComponent::RemoveExtendBehaviorInput(EIF_VRHandType Hand, EIF_VRInputType Input,
+	EIF_VRPlayerBehavior Behavior)
+{
+	if (Hand == EIF_VRHandType::None || Input == EIF_VRInputType::None || Behavior == EIF_VRPlayerBehavior::None)
+	{
+		return false;
+	}
+	if (ExtendInputMap.Num() == 0)
+	{
+		return false;
+	}
+	if (auto Proxies = ExtendInputMap.Find(Input))
+	{
+		if (Proxies->Num() > 0)
+		{
+			Proxies->RemoveAll([Behavior](FIF_BehaviorProxy A)
+			{
+				return A.Behavior == Behavior;
+			});
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UIF_VRBehaviorComponent::RemoveTopExtendBehaviorInput(EIF_VRHandType Hand, EIF_VRInputType Input)
+{
+	if (Hand == EIF_VRHandType::None || Input == EIF_VRInputType::None )
+	{
+		return false;
+	}
+	if (ExtendInputMap.Num() == 0)
+	{
+		return false;
+	}
+	if (auto Proxies = ExtendInputMap.Find(Input))
+	{
+		if (Proxies->Num() > 0)
+		{
+			Proxies->RemoveAt(Proxies->Num() - 1);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UIF_VRBehaviorComponent::RemoveAllExtendBehaviorInput(EIF_VRHandType Hand, EIF_VRInputType Input)
+{
+	if (Hand == EIF_VRHandType::None || Input == EIF_VRInputType::None)
+	{
+		return false;
+	}
+	if (ExtendInputMap.Num() == 0)
+	{
+		return false;
+	}
+	if (auto Proxies = ExtendInputMap.Find(Input))
+	{
+		if (Proxies->Num() > 0)
+		{
+			Proxies->Empty();
+			return true;
+		}
 	}
 	return false;
 }
@@ -104,11 +177,11 @@ void UIF_VRBehaviorComponent::ProcessBehaviorEvent(EIF_VRHandType Hand, EIF_VRIn
 	{
 		return;
 	}
-	if (auto Proxy = ProxyMap.Find(Input))
+	if (auto Proxies = ExtendInputMap.Find(Input))
 	{
-		if (Proxy->Num() > 0)
+		if (Proxies->Num() > 0)
 		{
-			const auto Last =Proxy->Last();
+			const auto Last =Proxies->Last();
 			if (Last.Hand == EIF_VRHandType::Left)
 			{
 				if(auto Func = FunctionMap_LeftHand.Find(Last.Behavior))
@@ -116,7 +189,7 @@ void UIF_VRBehaviorComponent::ProcessBehaviorEvent(EIF_VRHandType Hand, EIF_VRIn
 					Func->Execute(Value);
 					if (Last.bTriggerOnce)
 					{
-						Proxy->RemoveAt(Proxy->Num()-1);
+						Proxies->RemoveAt(Proxies->Num()-1);
 					}
 					return;
 				}
@@ -128,7 +201,7 @@ void UIF_VRBehaviorComponent::ProcessBehaviorEvent(EIF_VRHandType Hand, EIF_VRIn
 					Func->Execute(Value);
 					if (Last.bTriggerOnce)
 					{
-						Proxy->RemoveAt(Proxy->Num()-1);
+						Proxies->RemoveAt(Proxies->Num()-1);
 					}
 					return;
 				}

@@ -133,10 +133,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void MoveCharacter(float Fwd, float Right);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void MoveCharacterForward(float Fwd);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void MoveCharacterRight(float Right);
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void AdjustCapsule();
 

@@ -63,10 +63,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Behavior)
 	void Custom3(float Value, EIF_VRHandType Hand);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Behavior)
-	void Select1(float Value, EIF_VRHandType Hand);
+	void SelectUp(float Value, EIF_VRHandType Hand);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Behavior)
-	void Select2(float Value, EIF_VRHandType Hand);
-
+	void SelectDown(float Value, EIF_VRHandType Hand);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Behavior)
+	void SelectLeft(float Value, EIF_VRHandType Hand);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Behavior)
+	void SelectRight(float Value, EIF_VRHandType Hand);
 
 	
 };
