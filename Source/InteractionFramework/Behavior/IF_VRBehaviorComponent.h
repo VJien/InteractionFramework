@@ -121,9 +121,9 @@ public:
 	//移除所有相关输入
 	UFUNCTION(BlueprintCallable)
 	bool RemoveAllExtendBehaviorInput(EIF_VRHandType Hand, EIF_VRInputType Input);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetBehaviorValue(EIF_VRPlayerBehavior Behavior);
 
-
-	
 	
 	UFUNCTION(BlueprintCallable)
 	void ProcessBehaviorEvent(EIF_VRHandType Hand, EIF_VRInputType Input, float Value);

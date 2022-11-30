@@ -167,6 +167,11 @@ bool UIF_VRBehaviorComponent::RemoveAllExtendBehaviorInput(EIF_VRHandType Hand, 
 	return false;
 }
 
+float UIF_VRBehaviorComponent::GetBehaviorValue(EIF_VRPlayerBehavior Behavior)
+{
+	
+}
+
 void UIF_VRBehaviorComponent::ProcessBehaviorEvent(EIF_VRHandType Hand, EIF_VRInputType Input, float Value)
 {
 	if (Hand == EIF_VRHandType::None)
