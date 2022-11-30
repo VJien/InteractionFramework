@@ -131,6 +131,18 @@ enum class EIF_HandFingerType: uint8
 
 };
 
+UENUM(BlueprintType)
+enum class EIF_HandFingerStat: uint8
+{
+	None,
+	Idle,
+	StatAway,
+	Touch,
+	Pressed,
+	
+};
+
+
 
 USTRUCT(BlueprintType)
 struct FIF_VRHandFingerData
@@ -138,7 +150,17 @@ struct FIF_VRHandFingerData
 	GENERATED_BODY()
 public:
 	bool IsNealyEqual(FIF_VRHandFingerData Other, float BlendTolerance = 0.01, float RotationTolerance = 0.01);
+	FIF_VRHandFingerData(){}
+	FIF_VRHandFingerData(float InGrabBlend, FRotator InRotation_Joint1, FRotator InRotation_Joint2, FRotator InRotation_Joint3):
+	GrabBlend(InGrabBlend), Rotation_Joint1(InRotation_Joint1), Rotation_Joint2(InRotation_Joint2),Rotation_Joint3(InRotation_Joint3)
+	{}
+
 	
+	FIF_VRHandFingerData Lerp(FIF_VRHandFingerData Other, float Alpha) const
+	{
+		return FIF_VRHandFingerData(FMath::Lerp(GrabBlend, Other.GrabBlend,Alpha), FMath::Lerp(Rotation_Joint1, Other.Rotation_Joint1,Alpha),
+			FMath::Lerp(Rotation_Joint2, Other.Rotation_Joint2,Alpha),FMath::Lerp(Rotation_Joint3, Other.Rotation_Joint3,Alpha));
+	};
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(ClampMax = 1,ClampMin=0))
 	float GrabBlend = 0;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -380,3 +402,36 @@ public:
 
 };
 
+
+USTRUCT(BlueprintType)
+struct FIF_FingerPoseTableKey
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_HandFingerStat, FName> TableKey;
+	
+	
+};
+
+
+UCLASS(ClassGroup=InteractionFramework, config=Game,BlueprintType)
+class UIF_VRFingerStatDataAsset : public UDataAsset
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_HandFingerType, FIF_FingerPoseTableKey> Data;
+	
+};
+
+
+UCLASS(ClassGroup=InteractionFramework, config=Game, BlueprintType)
+class UIF_VRHMDFingerStatDataAsset : public UDataAsset
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TMap<EIF_VRHMDType, UIF_VRFingerStatDataAsset*> Data;
+	
+};

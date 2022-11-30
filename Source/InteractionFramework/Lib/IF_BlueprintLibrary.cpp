@@ -101,6 +101,40 @@ EIF_VRHMDType UIF_BlueprintLibrary::GetHMDType()
 	
 }
 
+FIF_VRHandFingerData UIF_BlueprintLibrary::LerpFingerData(FIF_VRHandFingerData A, FIF_VRHandFingerData B, float Alpha)
+{
+	return A.Lerp(B,Alpha);
+}
+
+FIF_VRHandFingerData UIF_BlueprintLibrary::GetFingerData(FIF_VRHandPoseData PoseData, EIF_HandFingerType Finger)
+{
+	switch (Finger)
+	{
+	case EIF_HandFingerType::Thumbstick:
+		{
+			return PoseData.Thumbstick;
+		}
+	case EIF_HandFingerType::Index:
+		{
+			return PoseData.Index;
+		}
+	case EIF_HandFingerType::Middle:
+		{
+			return PoseData.Middle;
+		}
+	case EIF_HandFingerType::Ring:
+		{
+			return PoseData.Ring;
+		}
+	case EIF_HandFingerType::Pinky:
+		{
+			return PoseData.Pinky;
+		}
+		default:break;
+	}
+	return FIF_VRHandFingerData();
+}
+
 FString UIF_BlueprintLibrary::InputTypeToString(EIF_VRInputType InputType)
 {
 	return IFEnumToString<EIF_VRInputType>("EIF_VRInputType",InputType);

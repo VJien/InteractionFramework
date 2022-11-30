@@ -23,9 +23,9 @@ protected:
 	
 	void Interp(FIF_VRHandFingerData& Current,  FIF_VRHandFingerData Target, float Delta, float BlendSpeed, float RotSpeed);
 public:
-	void UpdateFingerData_Implementation(EIF_HandFingerType Finger, const FIF_VRHandFingerData& Data);
-	void UpdateAllFingerData_Implementation(FIF_VRHandPoseData Data);
-
+	virtual void UpdateFingerData_Implementation(EIF_HandFingerType Finger, const FIF_VRHandFingerData& Data)override;
+	virtual void UpdateAllFingerData_Implementation(FIF_VRHandPoseData Data)override;
+	virtual void UpdateFingersData_Implementation(const TMap<EIF_HandFingerType, FIF_VRHandFingerData>& FingersData) override;	
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)

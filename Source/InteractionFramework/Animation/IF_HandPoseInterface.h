@@ -27,4 +27,6 @@ public:
 	void UpdateFingerData(EIF_HandFingerType Finger, const FIF_VRHandFingerData& Data);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void UpdateAllFingerData(FIF_VRHandPoseData Data);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void UpdateFingersData(const TMap<EIF_HandFingerType, FIF_VRHandFingerData>& FingersData);
 };

@@ -27,7 +27,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf = "WorldContext", HidePin = "WorldContext"))
 	static EIF_VRHMDType GetHMDType();
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf = "WorldContext", HidePin = "WorldContext"))
+	static FIF_VRHandFingerData LerpFingerData(FIF_VRHandFingerData A, FIF_VRHandFingerData B, float Alpha);
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf = "WorldContext", HidePin = "WorldContext"))
+	static FIF_VRHandFingerData GetFingerData(FIF_VRHandPoseData PoseData, EIF_HandFingerType Finger);
 
+	
 	static FString InputTypeToString(EIF_VRInputType InputType);
 	static EIF_VRInputType StringToInputType(FString String);
 

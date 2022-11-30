@@ -51,26 +51,31 @@ void UIF_HandAnimInstance::UpdateFingerData_Implementation(EIF_HandFingerType Fi
 			{
 				CurrPose.Thumbstick = Data;
 				TargetPose.Thumbstick = Data;
+				return;
 			}
 		case EIF_HandFingerType::Index:
 			{
 				CurrPose.Index = Data;
-				TargetPose.Thumbstick = Data;
+				TargetPose.Index = Data;
+				return;
 			}
 		case EIF_HandFingerType::Middle:
 			{
 				CurrPose.Middle = Data;
-				TargetPose.Thumbstick = Data;
+				TargetPose.Middle = Data;
+				return;
 			}
 		case  EIF_HandFingerType::Ring:
 			{
 				CurrPose.Ring = Data;
-				TargetPose.Thumbstick = Data;
+				TargetPose.Ring = Data;
+				return;
 			}
 		case  EIF_HandFingerType::Pinky:
 			{
 				CurrPose.Pinky = Data;
-				TargetPose.Thumbstick = Data;
+				TargetPose.Pinky = Data;
+				return;
 			}
 		default:
 			break;
@@ -83,22 +88,27 @@ void UIF_HandAnimInstance::UpdateFingerData_Implementation(EIF_HandFingerType Fi
 		case EIF_HandFingerType::Thumbstick:
 			{
 				TargetPose.Thumbstick = Data;
+				return;
 			}
 		case EIF_HandFingerType::Index:
 			{
-				TargetPose.Thumbstick = Data;
+				TargetPose.Index = Data;
+				return;
 			}
 		case EIF_HandFingerType::Middle:
 			{
-				TargetPose.Thumbstick = Data;
+				TargetPose.Middle = Data;
+				return;
 			}
 		case  EIF_HandFingerType::Ring:
 			{
-				TargetPose.Thumbstick = Data;
+				TargetPose.Ring = Data;
+				return;
 			}
 		case  EIF_HandFingerType::Pinky:
 			{
-				TargetPose.Thumbstick = Data;
+				TargetPose.Pinky = Data;
+				return;
 			}
 		default:
 			break;
@@ -120,3 +130,17 @@ void UIF_HandAnimInstance::UpdateAllFingerData_Implementation(FIF_VRHandPoseData
 	}
 	
 }
+
+void UIF_HandAnimInstance::UpdateFingersData_Implementation(
+	const TMap<EIF_HandFingerType, FIF_VRHandFingerData>& FingersData)
+{
+	if (FingersData.Num() == 0)
+	{
+		return;
+	}
+	for (auto P: FingersData)
+	{
+		Execute_UpdateFingerData(this,P.Key, P.Value);
+	}
+}
+
