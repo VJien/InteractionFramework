@@ -57,6 +57,7 @@ void UIF_VRBehaviorComponent::InitFunctionMap()
 	BIND_BEHAVIOR(Custom1);
 	BIND_BEHAVIOR(Custom2);
 	BIND_BEHAVIOR(Custom3);
+	BIND_BEHAVIOR(Select);
 	BIND_BEHAVIOR(SelectUp);
 	BIND_BEHAVIOR(SelectDown);
 	BIND_BEHAVIOR(SelectRight);
@@ -195,7 +196,7 @@ void UIF_VRBehaviorComponent::ProcessBehaviorEvent(EIF_VRHandType Hand, EIF_VRIn
 					if (Last.bTriggerOnce)
 					{
 						Proxies->RemoveAt(Proxies->Num()-1);
-					}
+					} 
 					return;
 				}
 			}

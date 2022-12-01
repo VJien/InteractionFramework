@@ -336,6 +336,7 @@ enum class EIF_VRPlayerBehavior: uint8
 	Menu1,
 	Menu2,
 	Use,
+	Select,
 	SelectUp,
 	SelectDown,
 	SelectRight,
