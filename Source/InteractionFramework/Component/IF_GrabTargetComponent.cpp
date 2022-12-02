@@ -76,12 +76,12 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				DirScaleByPriority = -1;
 			}
 			//两手的方向
-			FVector V0 = (OtherGrabTargetComponent->GetComponentLocation() - GetComponentLocation())* DirScaleByPriority;
+			FVector V0 = (OtherLoc - SourceTrans.GetLocation()) * DirScaleByPriority;
 			V0.Normalize();
 			//武器自身朝向
 			FVector V1 = GetOwner()->GetActorForwardVector();
 			//武器中的2个抓取点的朝向
-        	FVector V2 = (OtherLoc - SourceTrans.GetLocation()) * DirScaleByPriority;
+        	FVector V2 = (OtherGrabTargetComponent->GetComponentLocation() - GetComponentLocation())* DirScaleByPriority;
         	V2.Normalize();
 			//两个抓取点与武器自身朝向的夹角, 后面需要补偿回来
 			float Angle = UKismetMathLibrary::DegAcos(V1 | V2);
@@ -237,7 +237,7 @@ void UIF_GrabTargetComponent::StartTwoHandGrab()
 	bIsTwoHandGrab = true;
 }
 
-bool UIF_GrabTargetComponent::RefreshGrabStat()
+bool UIF_GrabTargetComponent::RefreshGrabStat(UIF_GrabSourceComponent* SourceComponent)
 {
 	if (HasAnyOtherComponentBeGrab(OtherGrabTargetComponent))
 	{
@@ -250,13 +250,13 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 					//当前的比其他的优先级高
 					if (GrabPriority < OtherGrabTargetComponent->GrabPriority)
 					{
-						GrabStat = EIF_GrabStat::Main;
+						PreGrabAsMainHand(SourceComponent);
 						OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
 						return true;
 					}
 					else
 					{
-						GrabStat = EIF_GrabStat::Secondary;
+						PreGrabAsSecondHand(SourceComponent);
 						OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
 						return true;
 					}
@@ -264,13 +264,13 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 				}
 				else if(OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::AlwaysMainHand)
 				{
-					GrabStat = EIF_GrabStat::Secondary;
+					PreGrabAsSecondHand(SourceComponent);
 					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
 					return true;
 				}
 				else
 				{
-					GrabStat = EIF_GrabStat::Main;
+					PreGrabAsMainHand(SourceComponent);
 					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
 					return true;
 				}
@@ -280,7 +280,7 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 			{
 				if (OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::Any)
 				{
-					GrabStat = EIF_GrabStat::Main;
+					PreGrabAsMainHand(SourceComponent);
 					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
 					return true;
 				}
@@ -289,7 +289,7 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 					//当前的比其他的优先级高
 					if (GrabPriority < OtherGrabTargetComponent->GrabPriority )
 					{
-						GrabStat = EIF_GrabStat::Main;
+						PreGrabAsMainHand(SourceComponent);
 						OtherGrabTargetComponent->GrabSourceComponent->Release();
 						OtherGrabTargetComponent = nullptr;
 						return true;
@@ -307,7 +307,7 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 				}
 				else // Secondary
 				{
-					GrabStat = EIF_GrabStat::Main;
+					PreGrabAsMainHand(SourceComponent);
 					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
 					return true;
 				}
@@ -316,13 +316,13 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 			{
 				if (OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::Any)
 				{
-					GrabStat = EIF_GrabStat::Secondary;
+					PreGrabAsSecondHand(SourceComponent);
 					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
 					return true;
 				}
 				else if(OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::AlwaysMainHand)
 				{
-					GrabStat = EIF_GrabStat::Secondary;
+					PreGrabAsSecondHand(SourceComponent);
 					OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Main);
 					return true;
 				}
@@ -340,7 +340,7 @@ bool UIF_GrabTargetComponent::RefreshGrabStat()
 	{
 		if (GrabRule != EIF_VRGrabRule::AlwaysSecondaryHand)
 		{
-			GrabStat = EIF_GrabStat::Main;
+			PreGrabAsMainHand(SourceComponent);
 			return true;
 		}
 	}
@@ -393,6 +393,42 @@ void UIF_GrabTargetComponent::CallGrabFinished()
 	}
 }
 
+void UIF_GrabTargetComponent::PreGrabAsMainHand(UIF_GrabSourceComponent* SourceComponent)
+{
+	GrabStat = EIF_GrabStat::Main;
+	bIsGrabing = true;
+	bIsTwoHandGrab = false;
+	bIsAttached = false;
+	if (SourceComponent)
+	{
+		GrabSourceComponent = SourceComponent;
+		//设置抓取旋转速度
+		float Dist =  (GetComponentLocation() - SourceComponent->GetComponentLocation()).Size();
+		if (Dist <= GrabTransitionTolerance)
+		{
+			CurrGrabRotationSpeed = GrabRotationSpeedClose;
+		}
+		else
+		{
+			FTransform OwnerTransform = GetOwner()->GetActorTransform();
+			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
+			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
+			const FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator (OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator());
+			CurrGrabRotationSpeed = FMath::Max3(FMath::Abs(DeltaRot.Roll), FMath::Abs(DeltaRot.Pitch), FMath::Abs(DeltaRot.Yaw));
+			CurrGrabRotationSpeed *= GrabSpeedFar / Dist;
+		}
+		
+		CurrGrabSpeed = GrabSpeedClose;
+	}
+	
+}
+
+void UIF_GrabTargetComponent::PreGrabAsSecondHand(UIF_GrabSourceComponent* SourceComponent)
+{
+	GrabSourceComponent = SourceComponent;
+	GrabStat = EIF_GrabStat::Secondary;
+}
+
 void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation(UIF_GrabTargetComponent* OtherComp, EIF_GrabStat GivenStat)
 {
 	if (OtherComp)
@@ -406,7 +442,7 @@ void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation(UIF_GrabT
 	}
 	else
 	{
-		RefreshGrabStat();
+		RefreshGrabStat(GrabSourceComponent);
 	}
 }
 
@@ -433,21 +469,9 @@ bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* Sou
 	{
 		return false;
 	}
-	if (RefreshGrabStat())
+	if (RefreshGrabStat(SourceComponent))
 	{
-		bIsGrabing = true;
-		GrabSourceComponent = SourceComponent;
 		OutStat = GrabStat;
-		float Dist =  (GetComponentLocation() - SourceComponent->GetComponentLocation()).Size();
-		FTransform OwnerTransform = GetOwner()->GetActorTransform();
-		FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
-		FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
-		
-		const FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator (OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator());
-		CurrGrabRotationSpeed = FMath::Max3(FMath::Abs(DeltaRot.Roll), FMath::Abs(DeltaRot.Pitch), FMath::Abs(DeltaRot.Yaw));
-		CurrGrabRotationSpeed *= GrabSpeedFar / Dist;
-		CurrGrabSpeed = GrabSpeedClose;
-		
 		return true;
 	}
 	

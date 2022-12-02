@@ -34,13 +34,15 @@ public:
 	void StartTwoHandGrab();
 protected:
 	UFUNCTION(BlueprintCallable)
-	bool RefreshGrabStat();
+	bool RefreshGrabStat(UIF_GrabSourceComponent* SourceComponent);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp);
 	UFUNCTION(BlueprintCallable)
 	void SetCustomRightDirectionComponent(USceneComponent* Component);
 
 	void CallGrabFinished();
+	void PreGrabAsMainHand(UIF_GrabSourceComponent* SourceComponent);
+	void PreGrabAsSecondHand(UIF_GrabSourceComponent* SourceComponent);
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, EIF_GrabStat& OutStat);
@@ -102,9 +104,9 @@ public:
 	//位置变化如果小于此(同时也要满足旋转变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabTransitionTolerance = 2.0f;
-	//旋转变化如果小于此(同时也要满足位置变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
+	//旋转(四元数quat的值)变化如果小于此(同时也要满足位置变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
-	float GrabRotationTolerance = 2.0f;
+	float GrabRotationTolerance = 0.1f;
 
 	
 
