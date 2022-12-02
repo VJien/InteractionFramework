@@ -30,6 +30,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+	void StartTwoHandGrab();
 protected:
 	UFUNCTION(BlueprintCallable)
 	bool RefreshGrabStat();
@@ -37,6 +39,8 @@ protected:
 	bool HasAnyOtherComponentBeGrab(UIF_GrabTargetComponent*& OtherComp);
 	UFUNCTION(BlueprintCallable)
 	void SetCustomRightDirectionComponent(USceneComponent* Component);
+
+	void CallGrabFinished();
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, EIF_GrabStat& OutStat);
@@ -48,7 +52,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	UIF_GrabSourceComponent* GrabSourceComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
-	bool bIsGrab = false;
+	bool bIsGrabing = false;
 	UPROPERTY(BlueprintReadWrite)
 	UIF_GrabTargetComponent* OtherGrabTargetComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
@@ -79,15 +83,22 @@ public:
 	//是否平滑抓取, 如果false, 那么即武器跟手保持位置一致(缺点是, 手的抖动会无差别反馈到武器上)
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	bool bSmoothGrab = true;
+	//抓到手上以后吸附住, 只作用于单手操作
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bAttachAfterGrab= false;
+	
 	//平滑抓取的最大速度, 在快速移动的时候会接近于这个速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
-	float GrabSpeedMax = 50.f;
-	//平滑抓取的最小速度, 在接近静止的时候会接近于这个速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
-	float GrabSpeedMin = 1.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
+	float GrabSpeedFar = 500.f;
+	//平滑抓取在接近静止的时候会接近于这个速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
+	float GrabSpeedClose = 200.f;
 	//最大速度和最小速度过渡的速度
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
-	float GrabSpeedInterp = 1.0f;
+	float GrabSpeedInterp = 100.0f;
+	//近处的旋转速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
+	float GrabRotationSpeedClose = 100.0f;
 	//位置变化如果小于此(同时也要满足旋转变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabTransitionTolerance = 2.0f;
@@ -95,8 +106,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationTolerance = 2.0f;
 
-
 	
 
-	float CurrGrabSpeed = 50.f;
+	float CurrGrabRotationSpeed = 0.01f;
+	
+	float CurrGrabSpeed = 0.01f;
+	bool bIsAttached = false;
+	bool bIsGrabed = false;
+	bool bIsTwoHandGrab = false;
 };

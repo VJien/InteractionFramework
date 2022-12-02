@@ -48,6 +48,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)
 	bool HasGrabActor();
 	
+	UFUNCTION(BlueprintCallable)
+	void NotifyGrabed(AActor* GrabActor, UIF_GrabTargetComponent* TargetComponent, EIF_GrabStat Stat);
 	
 	
 

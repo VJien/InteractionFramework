@@ -43,6 +43,12 @@ void UIF_GrabSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
+void UIF_GrabSourceComponent::NotifyGrabed(AActor* GrabActor, UIF_GrabTargetComponent* TargetComponent,
+	EIF_GrabStat Stat)
+{
+	OnGrab.Broadcast(GrabActor, TargetComponent, Stat);
+}
+
 bool UIF_GrabSourceComponent::HasGrabActor_Implementation()
 {
 	return GrabedActor != nullptr;
