@@ -382,7 +382,10 @@ void UIF_GrabTargetComponent::CallGrabFinished()
 	if (!bIsGrabed)
 	{
 		bIsGrabed = true;
-		bIsGrabing = false;
+		if (bAttachAfterGrab)
+		{
+			bIsGrabing = false;
+		}
 		if (GrabSourceComponent)
 		{
 			GrabSourceComponent->NotifyGrabed(GetOwner(), this, GrabStat);	
