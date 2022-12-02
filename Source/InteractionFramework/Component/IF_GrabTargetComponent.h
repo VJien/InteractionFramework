@@ -90,22 +90,22 @@ public:
 	bool bAttachAfterGrab= false;
 	
 	//平滑抓取的最大速度, 在快速移动的时候会接近于这个速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
 	float GrabSpeedFar = 500.f;
 	//平滑抓取在接近静止的时候会接近于这个速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
 	float GrabSpeedClose = 200.f;
 	//最大速度和最小速度过渡的速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabSpeedInterp = 100.0f;
 	//近处的旋转速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationSpeedClose = 100.0f;
 	//位置变化如果小于此(同时也要满足旋转变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabTransitionTolerance = 2.0f;
 	//旋转(四元数quat的值)变化如果小于此(同时也要满足位置变化), 那么定义为静止状态, 平滑抓取速度更接近于最小速度
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|SmootGrab", meta=(EditCondition = "bSmoothGrab"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationTolerance = 0.1f;
 
 	
