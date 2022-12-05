@@ -26,6 +26,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
 	UCameraComponent* Camera = nullptr;
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	USceneComponent* CameraRoot = nullptr;
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
 	USceneComponent* MoveDirectionComponent = nullptr;
 	
 };
@@ -49,25 +51,28 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	ACharacter* VR_Pawn = nullptr;
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	UCharacterMovementComponent* MovementComponent = nullptr;
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	USceneComponent* TraceAimComponent = nullptr;
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	USceneComponent* MoveDirectionComponent = nullptr;
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
+	USceneComponent* CameraRoot = nullptr;
+	UPROPERTY(BlueprintReadWrite)
 	UCameraComponent* Camera = nullptr;
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	AIF_VR_TraceVisual* TraceVisual = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	UIFSetting* Settings = nullptr;
+
 	
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Init(FIF_VRMoveData Data);
+
 	
 	//重新校准角色胶囊体与相机的位置， 保证重心一直保持在相机下方
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Common")
@@ -124,8 +129,6 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Turn")
 	float TurnAngle = 45.f;
-
-
 
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)

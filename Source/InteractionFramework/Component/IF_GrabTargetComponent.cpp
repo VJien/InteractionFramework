@@ -83,15 +83,25 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			//武器中的2个抓取点的朝向
         	FVector V2 = (OtherGrabTargetComponent->GetComponentLocation() - GetComponentLocation())* DirScaleByPriority;
         	V2.Normalize();
-			//两个抓取点与武器自身朝向的夹角, 后面需要补偿回来
-			float Angle = UKismetMathLibrary::DegAcos(V1 | V2);
-        	FVector Dir = UKismetMathLibrary::RotateAngleAxis(V0, Angle, V1 ^ V2);
-			Dir.Normalize();
-			if (bDebug)
+			FRotator DeltaRot;
+			
+			DeltaRot = UKismetMathLibrary::FindLookAtRotation( GetOwner()->GetTransform().InverseTransformPosition(GetComponentLocation()) ,
+				GetOwner()->GetTransform().InverseTransformPosition(OtherGrabTargetComponent->GetComponentLocation()));
+			DeltaRot = DeltaRot.GetInverse();
+			if (DirScaleByPriority < 0)
 			{
-				UE_LOG(LogTemp, Log, TEXT("Angle =%f, Dir = %s"), Angle, *Dir.ToString())
+				DeltaRot = DeltaRot.GetInverse();
 			}
-			FRotator TargetRot;
+			
+			FRotator HandRot =  UKismetMathLibrary::FindLookAtRotation( SourceTrans.GetTranslation(), OtherLoc);
+			if (DirScaleByPriority < 0)
+			{
+				HandRot = HandRot.GetInverse();
+			}
+			FRotator TargetRot = UKismetMathLibrary::ComposeRotators(HandRot, DeltaRot);
+		
+			FVector Dir = TargetRot.Vector();
+			
 			if (MainHandRightAxis == EIF_2HandGrabMainHandRightAxis::Lock)
 			{
 				TargetRot = UKismetMathLibrary::MakeRotFromXZ(Dir, FVector(0,0,1));
@@ -399,6 +409,7 @@ void UIF_GrabTargetComponent::PreGrabAsMainHand(UIF_GrabSourceComponent* SourceC
 	bIsGrabing = true;
 	bIsTwoHandGrab = false;
 	bIsAttached = false;
+
 	if (SourceComponent)
 	{
 		GrabSourceComponent = SourceComponent;

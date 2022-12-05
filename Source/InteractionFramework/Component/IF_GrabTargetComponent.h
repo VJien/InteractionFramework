@@ -116,4 +116,5 @@ public:
 	bool bIsAttached = false;
 	bool bIsGrabed = false;
 	bool bIsTwoHandGrab = false;
+	
 };

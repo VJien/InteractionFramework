@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values for this component's properties
@@ -34,7 +35,10 @@ void UIF_VR_MoveComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                         FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	if (bCapsuleAdjust)
+	{
+		AdjustCapsule();
+	}
 	// ...
 }
 
@@ -81,6 +85,7 @@ inline void UIF_VR_MoveComponent::Init_Implementation(FIF_VRMoveData InitData)
 	TraceAimComponent = InitData.TraceAimComponent;
 	Camera = InitData.Camera;
 	MoveDirectionComponent = InitData.MoveDirectionComponent;
+	CameraRoot = InitData.CameraRoot;
 	
 }
 
@@ -196,6 +201,32 @@ void UIF_VR_MoveComponent::FinishAndTryTeleport_Implementation()
 
 void UIF_VR_MoveComponent::AdjustCapsule_Implementation()
 {
+	if (VR_Pawn && CameraRoot && CameraRoot != VR_Pawn->GetRootComponent()  && Camera)
+	{
+		FVector CameraOffset = VR_Pawn->GetActorTransform().InverseTransformPosition(Camera->GetComponentLocation());
+		CameraOffset.Z = 0;
+		CameraRoot->AddLocalOffset(CameraOffset * -1);
+		VR_Pawn->AddActorWorldOffset(VR_Pawn->GetActorTransform().TransformVectorNoScale(CameraOffset));
+		
+		// FRotator CameraRotDelta =VR_Pawn->GetActorTransform().InverseTransformRotation(Camera->GetComponentRotation().Quaternion()).Rotator();
+		// CameraRotDelta.Roll = 0;
+		// CameraRotDelta.Pitch = 0;
+		// CameraRotationRoot->AddLocalRotation(CameraRotDelta.GetInverse());
+		// VR_Pawn->AddActorWorldRotation(CameraRotDelta);
+
+
+		// FTransform Offset = Camera->GetComponentTransform().GetRelativeTransform( VR_Pawn->GetActorTransform());
+		// FVector Transition = Offset.GetTranslation();
+		// Transition.Z = 0;
+		// FRotator Rot = Offset.GetRotation().Rotator();
+		// Rot.Roll = 0;
+		// Rot.Pitch = 0;
+		// Offset = FTransform(Rot, Transition);
+		// CameraRotationRoot->AddLocalTransform(Offset.Inverse());
+		// VR_Pawn->AddActorWorldTransform(Offset);
+		
+
+	}
 }
 
 void UIF_VR_MoveComponent::MoveCharacter_Implementation(float Fwd, float Right)
