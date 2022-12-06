@@ -75,28 +75,32 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			{
 				DirScaleByPriority = -1;
 			}
-			//两手的方向
-			FVector V0 = (OtherLoc - SourceTrans.GetLocation()) * DirScaleByPriority;
-			V0.Normalize();
-			//武器自身朝向
-			FVector V1 = GetOwner()->GetActorForwardVector();
-			//武器中的2个抓取点的朝向
-        	FVector V2 = (OtherGrabTargetComponent->GetComponentLocation() - GetComponentLocation())* DirScaleByPriority;
-        	V2.Normalize();
+			
 			FRotator DeltaRot;
 			
-			DeltaRot = UKismetMathLibrary::FindLookAtRotation( GetOwner()->GetTransform().InverseTransformPosition(GetComponentLocation()) ,
-				GetOwner()->GetTransform().InverseTransformPosition(OtherGrabTargetComponent->GetComponentLocation()));
-			DeltaRot = DeltaRot.GetInverse();
+			
 			if (DirScaleByPriority < 0)
 			{
+				DeltaRot = UKismetMathLibrary::FindLookAtRotation( GetOwner()->GetTransform().InverseTransformPosition(OtherGrabTargetComponent->GetComponentLocation()),
+					GetOwner()->GetTransform().InverseTransformPosition(GetComponentLocation()) );
+				DeltaRot = DeltaRot.GetInverse();
+			}
+			else
+			{
+				DeltaRot = UKismetMathLibrary::FindLookAtRotation( GetOwner()->GetTransform().InverseTransformPosition(GetComponentLocation()) ,
+				GetOwner()->GetTransform().InverseTransformPosition(OtherGrabTargetComponent->GetComponentLocation()));
 				DeltaRot = DeltaRot.GetInverse();
 			}
 			
-			FRotator HandRot =  UKismetMathLibrary::FindLookAtRotation( SourceTrans.GetTranslation(), OtherLoc);
+			FRotator HandRot;
+			
 			if (DirScaleByPriority < 0)
 			{
-				HandRot = HandRot.GetInverse();
+				HandRot =  UKismetMathLibrary::FindLookAtRotation(OtherLoc,SourceTrans.GetTranslation() );
+			}
+			else
+			{
+				HandRot =  UKismetMathLibrary::FindLookAtRotation(SourceTrans.GetTranslation(), OtherLoc);
 			}
 			FRotator TargetRot = UKismetMathLibrary::ComposeRotators(HandRot, DeltaRot);
 		
@@ -146,33 +150,24 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			}
 			FTransform OwnerTransform = GetOwner()->GetActorTransform();
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
-			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
-			TargetTransform.SetRotation(TargetRot.Quaternion());
+			FTransform FixedGrabSourceTransform = GrabSourceComponent->GetComponentTransform();
+			FTransform TargetTransform = TargetActorTransform * FixedGrabSourceTransform;
+			//TargetTransform.SetRotation(TargetRot.Quaternion());
 			if (bSmoothGrab)
 			{
 				FRotator CurrRot;
+				FVector CurrLoc;
 				if (UKismetMathLibrary::NearlyEqual_TransformTransform(OwnerTransform,TargetTransform,GrabTransitionTolerance,GrabRotationTolerance))
 				{
-					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedClose, DeltaTime, GrabSpeedInterp);
-					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator(),DeltaTime, GrabRotationSpeedClose);
+					CurrGrabSpeed =  GrabSpeedInterp > 0? UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedClose, DeltaTime, GrabSpeedInterp): GrabSpeedClose;
+					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetRot,DeltaTime, GrabRotationSpeedClose);
 				}
 				else
 				{
-					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedFar, DeltaTime, GrabSpeedInterp);
-					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator(),DeltaTime, CurrGrabRotationSpeed);
+					CurrGrabSpeed = GrabSpeedInterp > 0? UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedFar, DeltaTime, GrabSpeedInterp): GrabSpeedFar;
+					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetRot,DeltaTime, FMath::Max(GrabRotationSpeedFar,StartGrabRotationSpeed));
 				}
-				if (bDebug)
-				{
-					UE_LOG(LogTemp, Log, TEXT("OwnerTransform = %s, TargetTransform = %s"), *OwnerTransform.ToString(), *TargetTransform.ToString())
-				}
-				FVector CurrLoc = UKismetMathLibrary::VInterpTo_Constant(OwnerTransform.GetLocation(), TargetTransform.GetLocation(),DeltaTime,CurrGrabSpeed);
-				 
-				
-				if (bDebug)
-				{
-					UE_LOG(LogTemp, Log, TEXT("CurrTransform = %s"), *FTransform(CurrRot, CurrLoc).ToString())
-				}
-				
+				CurrLoc = UKismetMathLibrary::VInterpTo_Constant(OwnerTransform.GetLocation(), TargetTransform.GetLocation(),DeltaTime, CurrGrabSpeed);
 				GetOwner()->SetActorLocationAndRotation(CurrLoc,CurrRot);
 				CallGrabFinished();
 			}
@@ -212,14 +207,14 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 					else
 					{
 						CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator(),DeltaTime,GrabRotationSpeedClose);
-						CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedClose, DeltaTime, GrabSpeedInterp);
+						CurrGrabSpeed =  GrabSpeedInterp > 0? UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedClose, DeltaTime, GrabSpeedInterp): GrabSpeedClose;
 					}
 					CallGrabFinished();
 				}
 				else
 				{
-					CurrGrabSpeed = UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedFar, DeltaTime, GrabSpeedInterp);
-					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator(),DeltaTime,CurrGrabRotationSpeed);
+					CurrGrabSpeed =  GrabSpeedInterp > 0? UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedFar, DeltaTime, GrabSpeedInterp): GrabSpeedFar;
+					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator(),DeltaTime,FMath::Max(GrabRotationSpeedFar,StartGrabRotationSpeed));
 				}
 				FVector CurrLoc = UKismetMathLibrary::VInterpTo_Constant(OwnerTransform.GetLocation(), TargetTransform.GetLocation(),DeltaTime,CurrGrabSpeed);
 				GetOwner()->SetActorLocationAndRotation(CurrLoc,CurrRot);
@@ -417,7 +412,7 @@ void UIF_GrabTargetComponent::PreGrabAsMainHand(UIF_GrabSourceComponent* SourceC
 		float Dist =  (GetComponentLocation() - SourceComponent->GetComponentLocation()).Size();
 		if (Dist <= GrabTransitionTolerance)
 		{
-			CurrGrabRotationSpeed = GrabRotationSpeedClose;
+			StartGrabRotationSpeed = GrabRotationSpeedClose;
 		}
 		else
 		{
@@ -425,8 +420,8 @@ void UIF_GrabTargetComponent::PreGrabAsMainHand(UIF_GrabSourceComponent* SourceC
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
 			FTransform TargetTransform = TargetActorTransform * GrabSourceComponent->GetComponentTransform();
 			const FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator (OwnerTransform.GetRotation().Rotator(), TargetTransform.GetRotation().Rotator());
-			CurrGrabRotationSpeed = FMath::Max3(FMath::Abs(DeltaRot.Roll), FMath::Abs(DeltaRot.Pitch), FMath::Abs(DeltaRot.Yaw));
-			CurrGrabRotationSpeed *= GrabSpeedFar / Dist;
+			StartGrabRotationSpeed = FMath::Max3(FMath::Abs(DeltaRot.Roll), FMath::Abs(DeltaRot.Pitch), FMath::Abs(DeltaRot.Yaw));
+			StartGrabRotationSpeed *= GrabSpeedFar / Dist;
 		}
 		
 		CurrGrabSpeed = GrabSpeedClose;

@@ -95,9 +95,12 @@ public:
 	//平滑抓取在接近静止的时候会接近于这个速度
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab", ClampMin=0.1))
 	float GrabSpeedClose = 200.f;
-	//最大速度和最小速度过渡的速度
+	//最大速度和最小速度过渡的速度, 双重差值, 保证平滑过渡; 值小于等于0就不做差值
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabSpeedInterp = 100.0f;
+	//近处的旋转速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
+	float GrabRotationSpeedFar = 1000.0f;
 	//近处的旋转速度
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationSpeedClose = 100.0f;
@@ -109,8 +112,8 @@ public:
 	float GrabRotationTolerance = 0.1f;
 
 	
-
-	float CurrGrabRotationSpeed = 0.01f;
+	//开始抓取的时候的抓取旋转速度
+	float StartGrabRotationSpeed = 0.01f;
 	
 	float CurrGrabSpeed = 0.01f;
 	bool bIsAttached = false;
