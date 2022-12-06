@@ -6,7 +6,7 @@
 #include "Base/IF_ActorComponent.h"
 #include "Base/IF_SceneComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "IF_VR_TargetCheckComponent.generated.h"
+#include "IF_TargetCheckComponent.generated.h"
 UENUM(BlueprintType)
 enum class EIF_TargetCheckMultiResultRule : uint8
 {
@@ -195,14 +195,15 @@ public:
 	bool TryGetCurrentHitResult(FHitResult& HitResult);
 	
 protected:
+	//检测间隔, 0:高频Tick
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	float CheckInterval = 0;
+	float CheckInterval = 0.1;
 	//保持记住最后一个目标
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	bool bRememberLastTarget = false;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, Instanced)
 	UIF_TargetCheckConfig* Type;
-	//检测间隔, 0:高频Tick
+	
 	
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
