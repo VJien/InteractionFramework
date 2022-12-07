@@ -49,6 +49,8 @@ void UIF_GrabSourceComponent::NotifyGrabed(AActor* GrabActor, UIF_GrabTargetComp
 	OnGrab.Broadcast(GrabActor, TargetComponent, Stat);
 }
 
+
+
 bool UIF_GrabSourceComponent::HasGrabActor_Implementation()
 {
 	return GrabedActor != nullptr;
@@ -65,7 +67,7 @@ void UIF_GrabSourceComponent::Release_Implementation()
 	{
 		MatchedTargetCompoennt->BeRelease();
 	}
-	OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt, MatchedTargetCompoennt->GrabStat);
+	OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt, MatchedTargetCompoennt->GetGrabStat());
 	MatchedTargetCompoennt = nullptr;
 	GrabedActor = nullptr;
 	
@@ -118,7 +120,7 @@ bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHan
 	if (MatchedTargetCompoennt->BeGrab(this,OutStat))
 	{
 		GrabedActor = TargetActor;
-		OnGrab.Broadcast(TargetActor, MatchedTargetCompoennt,MatchedTargetCompoennt->GrabStat);
+		OnPreGrab.Broadcast(TargetActor, MatchedTargetCompoennt,MatchedTargetCompoennt->GetGrabStat());
 	}
 	
 	

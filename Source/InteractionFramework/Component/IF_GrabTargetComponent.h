@@ -8,7 +8,7 @@
 #include "InteractionFramework/Data/IFTypes.h"
 #include "IF_GrabTargetComponent.generated.h"
 
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGrabTargetEvent, UIF_GrabSourceComponent*, GrabSourceComponent);
 class UIF_GrabSourceComponent;
 
 UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent), BlueprintType, Blueprintable)
@@ -44,6 +44,8 @@ protected:
 	void PreGrabAsMainHand(UIF_GrabSourceComponent* SourceComponent);
 	void PreGrabAsSecondHand(UIF_GrabSourceComponent* SourceComponent);
 public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool HasGrabAnything();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool BeGrab(UIF_GrabSourceComponent* SourceComponent, EIF_GrabStat& OutStat);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -51,6 +53,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void NotifyGrabComponentUpdate(UIF_GrabTargetComponent* OtherComp = nullptr, EIF_GrabStat GivenStat = EIF_GrabStat::Main);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EIF_GrabStat GetGrabStat()
+	{
+		return GrabStat;
+	};
+
+	
+protected:
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FOnGrabTargetEvent OnPreGrab;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FOnGrabTargetEvent OnGrab;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	FOnGrabTargetEvent OnRelease;
+	
 	UPROPERTY(BlueprintReadWrite)
 	UIF_GrabSourceComponent* GrabSourceComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
@@ -69,7 +86,7 @@ public:
 	//抓取方式
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_VRGrabRule GrabRule = EIF_VRGrabRule::Any;
-	//主手优先级, 越小越优先为主手!!
+	//主手优先级, 越大越优先为主手!!
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	int32 GrabPriority = 0;
 	//方向优先级, 双手抓取的时候, 越小越靠前!! 因为并非主手一定是靠后的那只手
@@ -111,7 +128,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationTolerance = 0.1f;
 
-	
+
 	//开始抓取的时候的抓取旋转速度
 	float StartGrabRotationSpeed = 0.01f;
 	

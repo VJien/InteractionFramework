@@ -53,7 +53,6 @@ public:
 	
 	
 
-
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	AActor* GrabedActor = nullptr;
@@ -66,7 +65,8 @@ protected:
 
 	
 public:
-	
+	UPROPERTY(BlueprintAssignable)
+	FIF_OnGrabEvent OnPreGrab;
 	UPROPERTY(BlueprintAssignable)
 	FIF_OnGrabEvent OnGrab;
 	UPROPERTY(BlueprintAssignable)

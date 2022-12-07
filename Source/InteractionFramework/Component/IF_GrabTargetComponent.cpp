@@ -161,6 +161,7 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				{
 					CurrGrabSpeed =  GrabSpeedInterp > 0? UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedClose, DeltaTime, GrabSpeedInterp): GrabSpeedClose;
 					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetRot,DeltaTime, GrabRotationSpeedClose);
+					CallGrabFinished();
 				}
 				else
 				{
@@ -169,7 +170,7 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				}
 				CurrLoc = UKismetMathLibrary::VInterpTo_Constant(OwnerTransform.GetLocation(), TargetTransform.GetLocation(),DeltaTime, CurrGrabSpeed);
 				GetOwner()->SetActorLocationAndRotation(CurrLoc,CurrRot);
-				CallGrabFinished();
+				
 			}
 			else
 			{
@@ -202,6 +203,7 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 						bIsAttached = true;
 						GetOwner()->SetActorLocationAndRotation(TargetTransform.GetLocation(),TargetTransform.GetRotation());
 						GetOwner()->AttachToComponent(GrabSourceComponent, FAttachmentTransformRules::KeepWorldTransform);
+						CallGrabFinished();
 						return;
 					}
 					else
@@ -253,7 +255,7 @@ bool UIF_GrabTargetComponent::RefreshGrabStat(UIF_GrabSourceComponent* SourceCom
 				if (OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::Any)
 				{
 					//当前的比其他的优先级高
-					if (GrabPriority < OtherGrabTargetComponent->GrabPriority)
+					if (GrabPriority >= OtherGrabTargetComponent->GrabPriority)
 					{
 						PreGrabAsMainHand(SourceComponent);
 						OtherGrabTargetComponent->NotifyGrabComponentUpdate(this, EIF_GrabStat::Secondary);
@@ -292,7 +294,7 @@ bool UIF_GrabTargetComponent::RefreshGrabStat(UIF_GrabSourceComponent* SourceCom
 				else if(OtherGrabTargetComponent->GrabRule == EIF_VRGrabRule::AlwaysMainHand)
 				{
 					//当前的比其他的优先级高
-					if (GrabPriority < OtherGrabTargetComponent->GrabPriority )
+					if (GrabPriority >= OtherGrabTargetComponent->GrabPriority )
 					{
 						PreGrabAsMainHand(SourceComponent);
 						OtherGrabTargetComponent->GrabSourceComponent->Release();
@@ -395,6 +397,7 @@ void UIF_GrabTargetComponent::CallGrabFinished()
 		{
 			GrabSourceComponent->NotifyGrabed(GetOwner(), this, GrabStat);	
 		}
+		OnGrab.Broadcast(GrabSourceComponent);
 	}
 }
 
@@ -435,6 +438,12 @@ void UIF_GrabTargetComponent::PreGrabAsSecondHand(UIF_GrabSourceComponent* Sourc
 	GrabStat = EIF_GrabStat::Secondary;
 }
 
+bool UIF_GrabTargetComponent::HasGrabAnything()
+{
+	return GrabStat == EIF_GrabStat::Main || GrabStat == EIF_GrabStat::Secondary;
+}
+
+
 void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation(UIF_GrabTargetComponent* OtherComp, EIF_GrabStat GivenStat)
 {
 	if (OtherComp)
@@ -454,6 +463,7 @@ void UIF_GrabTargetComponent::NotifyGrabComponentUpdate_Implementation(UIF_GrabT
 
 void UIF_GrabTargetComponent::BeRelease_Implementation()
 {
+	
 	bIsGrabing = false;
 	bIsGrabed = false;
 	GrabStat = EIF_GrabStat::None;
@@ -466,6 +476,8 @@ void UIF_GrabTargetComponent::BeRelease_Implementation()
 	{
 		OtherGrabTargetComponent->NotifyGrabComponentUpdate();
 	}
+	OnRelease.Broadcast(GrabSourceComponent);
+	GrabSourceComponent = nullptr;
 	OtherGrabTargetComponent = nullptr;
 }
 
@@ -478,6 +490,7 @@ bool UIF_GrabTargetComponent::BeGrab_Implementation(UIF_GrabSourceComponent* Sou
 	if (RefreshGrabStat(SourceComponent))
 	{
 		OutStat = GrabStat;
+		OnPreGrab.Broadcast(SourceComponent);
 		return true;
 	}
 	
