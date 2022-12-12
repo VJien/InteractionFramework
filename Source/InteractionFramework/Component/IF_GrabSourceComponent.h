@@ -40,7 +40,7 @@ public:
 
 	//如果Hand == None, 那么根据Tag匹配
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool Grab(AActor* TargetActor,EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat);
+	bool Grab(AActor* TargetActor,EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat, UIF_GrabTargetComponent*& TargetComponent);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Release();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure)

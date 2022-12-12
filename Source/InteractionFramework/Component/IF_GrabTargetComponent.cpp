@@ -161,7 +161,7 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				{
 					CurrGrabSpeed =  GrabSpeedInterp > 0? UKismetMathLibrary::FInterpTo(CurrGrabSpeed, GrabSpeedClose, DeltaTime, GrabSpeedInterp): GrabSpeedClose;
 					CurrRot = UKismetMathLibrary::RInterpTo_Constant(OwnerTransform.GetRotation().Rotator(), TargetRot,DeltaTime, GrabRotationSpeedClose);
-					CallGrabFinished();
+					
 				}
 				else
 				{
@@ -170,6 +170,7 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				}
 				CurrLoc = UKismetMathLibrary::VInterpTo_Constant(OwnerTransform.GetLocation(), TargetTransform.GetLocation(),DeltaTime, CurrGrabSpeed);
 				GetOwner()->SetActorLocationAndRotation(CurrLoc,CurrRot);
+				CallGrabFinished();
 				
 			}
 			else
@@ -436,6 +437,7 @@ void UIF_GrabTargetComponent::PreGrabAsSecondHand(UIF_GrabSourceComponent* Sourc
 {
 	GrabSourceComponent = SourceComponent;
 	GrabStat = EIF_GrabStat::Secondary;
+	CallGrabFinished();
 }
 
 bool UIF_GrabTargetComponent::HasGrabAnything()

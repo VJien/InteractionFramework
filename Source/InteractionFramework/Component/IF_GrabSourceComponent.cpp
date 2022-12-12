@@ -73,7 +73,7 @@ void UIF_GrabSourceComponent::Release_Implementation()
 	
 }
 
-bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat)
+bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat, UIF_GrabTargetComponent*& TargetComponent)
 {
 	if (!TargetActor)
 	{
@@ -123,7 +123,7 @@ bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHan
 		OnPreGrab.Broadcast(TargetActor, MatchedTargetCompoennt,MatchedTargetCompoennt->GetGrabStat());
 	}
 	
-	
+	TargetComponent = MatchedTargetCompoennt;
 	return true;
 }
 
