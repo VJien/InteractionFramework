@@ -3,18 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Base/IF_SceneComponent.h"
 #include "Components/ActorComponent.h"
-#include "IF_ActorComponent.generated.h"
+#include "IF_SnapTargetComponent.generated.h"
 
 
-UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent), Blueprintable, BlueprintType)
-class INTERACTIONFRAMEWORK_API UIF_ActorComponent : public UActorComponent
+UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
+class INTERACTIONFRAMEWORK_API UIF_SnapTargetComponent : public UIF_SceneComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UIF_ActorComponent();
+	UIF_SnapTargetComponent();
 
 protected:
 	// Called when the game starts
@@ -24,15 +25,4 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-
-
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsWorking();
-	UFUNCTION(BlueprintCallable)
-	void EnableWorking(bool bEnable);
-
-protected:
-
-	bool bIsWorking = false;
 };

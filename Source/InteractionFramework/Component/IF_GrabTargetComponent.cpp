@@ -62,6 +62,10 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
                                             FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!IsWorking())
+	{
+		return;
+	}
 	if ( (bIsGrabing ||  bIsTwoHandGrab)  && GrabStat == EIF_GrabStat::Main && GrabSourceComponent )
 	{
 		//双手抓取

@@ -590,7 +590,7 @@ AActor* UIF_TargetCheckConfig_BoxOverlap::GetActor_Implementation(USceneComponen
 	}
 	TArray<AActor*> Actors;
 	OverlapComponent->GetOverlappingActors(Actors,ClassOnlyCheck);
-	
+
 	return GetBestActor(SourceCompennt, Actors);
 }
 
@@ -615,6 +615,49 @@ void UIF_TargetCheckComponent::BeginPlay()
 	
 }
 
+USceneComponent* UIF_TargetCheckComponent::GetNearestComponent(AActor* Actor, FVector HitPoint)
+{
+	if (CheckComponentClass == nullptr || !Actor)
+	{
+		return nullptr;
+	}
+	TArray<UActorComponent*> Components;
+	Actor->GetComponents(CheckComponentClass, Components);
+	if (Components.Num() == 0)
+	{
+		return nullptr;
+	}
+	UIF_ComponentCheckRule* CheckRuleCDO =  Cast<UIF_ComponentCheckRule>(ComponentCheckRule? ComponentCheckRule->ClassDefaultObject: nullptr);
+	
+	if (Components.Num() == 1)
+	{
+		if (CheckRuleCDO &&  CheckRuleCDO->CheckComponent(this, Cast<USceneComponent>(Components[0])))
+		{
+			return Cast<USceneComponent>(Components[0]);
+		}
+	}
+	USceneComponent* BestComponent = nullptr;
+	float Dist = FLT_MAX;
+	for (auto&& Component: Components)
+	{
+		if (auto&& SC = Cast<USceneComponent>(Component))
+		{
+			if (CheckRuleCDO &&  !CheckRuleCDO->CheckComponent(this, SC))
+			{
+				continue;
+			}
+			float NewDist = (HitPoint - SC->GetComponentLocation()).SizeSquared();
+			if(NewDist < Dist)
+			{
+				Dist = NewDist;
+				BestComponent = SC;
+			}
+		}
+	}
+	return BestComponent;
+	
+}
+
 
 // Called every frame
 void UIF_TargetCheckComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -628,7 +671,7 @@ void UIF_TargetCheckComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			AActor* NewActor = Type->GetActor(this);
 			if (!(NewActor == nullptr && bRememberLastTarget) && NewActor != CurrentBestActor )
 			{
-				OnHitActorUpdated.Broadcast(NewActor, CurrentBestActor);
+				OnActorUpdated.Broadcast(NewActor, CurrentBestActor);
 				CurrentBestActor = NewActor;
 			}
 		
@@ -636,8 +679,15 @@ void UIF_TargetCheckComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			if ((NewHit.GetActor() != CurrentBestHit.GetActor() || NewHit.GetComponent() != CurrentBestHit.GetComponent() ||
 				NewHit.ImpactPoint != CurrentBestHit.ImpactPoint) && !(!NewHit.IsValidBlockingHit() && bRememberLastTarget))
 			{
-				OnHandCheckHitResultUpdated.Broadcast(NewHit, CurrentBestHit);
+				OnHitResultUpdated.Broadcast(NewHit, CurrentBestHit);
 				CurrentBestHit = NewHit;
+				auto BestComp = GetNearestComponent(CurrentBestHit.GetActor(), CurrentBestHit.ImpactPoint);
+				if (BestComp != CurrComponent)
+				{
+					LastComponent = CurrComponent;
+					CurrComponent = BestComp;
+					OnComponentUpdated.Broadcast(CurrComponent, LastComponent);
+				}
 			}
 		}
 		CurrTime = 0;

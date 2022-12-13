@@ -63,6 +63,10 @@ AActor* UIF_GrabSourceComponent::GetGrabedActor_Implementation()
 
 void UIF_GrabSourceComponent::Release_Implementation()
 {
+	if (!IsWorking())
+	{
+		return;
+	}
 	if (MatchedTargetCompoennt)
 	{
 		MatchedTargetCompoennt->BeRelease();
@@ -75,7 +79,7 @@ void UIF_GrabSourceComponent::Release_Implementation()
 
 bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat, UIF_GrabTargetComponent*& TargetComponent)
 {
-	if (!TargetActor)
+	if (!TargetActor || !IsWorking())
 	{
 		return false;
 	}

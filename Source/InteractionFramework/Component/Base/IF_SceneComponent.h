@@ -13,4 +13,14 @@ UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent), Bl
 class INTERACTIONFRAMEWORK_API UIF_SceneComponent : public USceneComponent
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsWorking();
+	UFUNCTION(BlueprintCallable)
+	void EnableWorking(bool bEnable);
+
+
+
+	bool bIsWorking = true;
 };

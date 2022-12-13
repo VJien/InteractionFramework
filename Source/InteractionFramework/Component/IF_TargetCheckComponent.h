@@ -157,11 +157,24 @@ public:
 };
 
 
+UCLASS(Blueprintable, Abstract,Blueprintable)
+class UIF_ComponentCheckRule : public UObject
+{
+	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure)
+	bool CheckComponent(class UIF_TargetCheckComponent* TargetCheckComponent, USceneComponent* TargetComponent);
+	
+};
+
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHandCheckActorEvent, AActor*, NewActor, AActor*, OldActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHandCheckHitEvent, FHitResult, NewHit,FHitResult, OldHit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentHitEvent, USceneComponent*, NewComponent, USceneComponent*, OldComponent);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+
+UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
 class INTERACTIONFRAMEWORK_API UIF_TargetCheckComponent : public UIF_SceneComponent
 {
 	GENERATED_BODY()
@@ -173,6 +186,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+
+	USceneComponent* GetNearestComponent(AActor* Actor, FVector HitPoint);
 
 public:
 	// Called every frame
@@ -201,23 +217,29 @@ protected:
 	//保持记住最后一个目标
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	bool bRememberLastTarget = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	TSubclassOf<USceneComponent> CheckComponentClass = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	TSubclassOf<UIF_ComponentCheckRule> ComponentCheckRule = nullptr;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, Instanced)
 	UIF_TargetCheckConfig* Type;
 	
 	
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FOnHandCheckActorEvent OnHitActorUpdated;
+	FOnHandCheckActorEvent OnActorUpdated;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FOnHandCheckHitEvent OnHandCheckHitResultUpdated;
-	
+	FOnHandCheckHitEvent OnHitResultUpdated;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnComponentHitEvent OnComponentUpdated;
 	UPROPERTY()
 	AActor* CurrentBestActor = nullptr;
 	UPROPERTY()
 	FHitResult CurrentBestHit;
-
-
-
+	UPROPERTY()
+	USceneComponent* CurrComponent = nullptr;
+	UPROPERTY()
+	USceneComponent* LastComponent = nullptr;
 
 	float CurrTime= 0;
 

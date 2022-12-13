@@ -7,6 +7,7 @@
 #include "IXRTrackingSystem.h"
 #include "openvr.h"
 #include "OpenVRExpansionFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 TEnumAsByte<EWorldType::Type> UIF_BlueprintLibrary::GetWorldType(UObject* WorldContext)
@@ -143,4 +144,63 @@ FString UIF_BlueprintLibrary::InputTypeToString(EIF_VRInputType InputType)
 EIF_VRInputType UIF_BlueprintLibrary::StringToInputType(FString String)
 {
 	return IFStringToEnum<EIF_VRInputType>("EIF_VRInputType",String);
+}
+
+void UIF_BlueprintLibrary::CalcHitDirection( FVector HitPoint, FVector Origin, FVector Forward, FVector Right,
+	EIF_Direction& Direction)
+{
+	const FVector HitDir = (HitPoint - Origin).GetSafeNormal();
+	float DotFwd = Forward | HitDir;
+	float DotRt = Right | HitDir;
+	float DegFwd = UKismetMathLibrary::DegAcos(DotFwd);
+	float DegRt = UKismetMathLibrary::DegAcos(DotRt);
+	float ModFwd = FMath::Fmod(DegFwd, 45.f / 2);
+	
+	if (DotRt > 0)
+	{
+		if (ModFwd<=1)
+		{
+			Direction = EIF_Direction::Front;
+		}
+		else if (ModFwd<=3 && ModFwd>1)
+		{
+			Direction = EIF_Direction::FrontRight;
+		}
+		else if (ModFwd <=5 && ModFwd>3)
+		{
+			Direction = EIF_Direction::Right;
+		}
+		else if (ModFwd <=3 && ModFwd>5)
+		{
+			Direction = EIF_Direction::BackRight;
+		}
+		else
+		{
+			Direction = EIF_Direction::Back;
+		}
+	}
+	else
+	{
+		if (ModFwd<=1)
+		{
+			Direction = EIF_Direction::Front;
+		}
+		else if (ModFwd<=3 && ModFwd>1)
+		{
+			Direction = EIF_Direction::FrontLeft;
+		}
+		else if (ModFwd <=5 && ModFwd>3)
+		{
+			Direction = EIF_Direction::Left;
+		}
+		else if (ModFwd <=3 && ModFwd>5)
+		{
+			Direction = EIF_Direction::BackLeft;
+		}
+		else
+		{
+			Direction = EIF_Direction::Back;
+		}
+	}
+	
 }

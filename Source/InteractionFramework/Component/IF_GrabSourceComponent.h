@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Base/IF_SceneComponent.h"
 
 #include "InteractionFramework/Data/IFTypes.h"
 
@@ -15,7 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FIF_OnGrabEvent, AActor*, GrabAct
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FIF_OnReleaseEvent);
 
 UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
-class INTERACTIONFRAMEWORK_API UIF_GrabSourceComponent : public USceneComponent
+class INTERACTIONFRAMEWORK_API UIF_GrabSourceComponent : public UIF_SceneComponent
 {
 	GENERATED_BODY()
 

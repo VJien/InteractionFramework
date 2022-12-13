@@ -17,6 +17,38 @@ DECLARE_LOG_CATEGORY_EXTERN(IF_Log, Log, All);
 #define IF_ERROR_P(l,...) UE_LOG(IF_Log, Error, TEXT(l), ...)
 #define IF_ERROR(l) UE_LOG(IF_Log, Error, TEXT(l))
 
+UENUM(BlueprintType)
+enum class EIF_DragType: uint8
+{
+	None = 0,
+	Linear_X,
+	Linear_Y,
+	Linear_Z,
+	Rotation_X,
+	Rotation_Y,
+	Rotation_Z,
+	//相对目标点的转动角度
+	Angle_X,
+	//相对目标点的转动角度
+	Angle_Y,
+	//相对目标点的转动角度
+	Angle_Z,
+	Free
+};
+
+UENUM(BlueprintType)
+enum class EIF_Direction: uint8
+{
+	None = 0,
+	Front,
+	Left,
+	Right,
+	Back,
+	FrontLeft,
+	FrontRight,
+	BackLeft,
+	BackRight
+};
 
 
 UENUM(BlueprintType)
