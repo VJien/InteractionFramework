@@ -42,22 +42,32 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_VRHandType HandType = EIF_VRHandType::None;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	EIF_DragType SourceType = EIF_DragType::Linear_X;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	EIF_DragType_Source SourceType = EIF_DragType_Source::Linear_X;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="SourceType == EIF_DragType_Source::Linear_X || SourceType == EIF_DragType_Source::Linear_Y || SourceType == EIF_DragType_Source::Linear_Z"))
 	bool bSourceInTargetSpace = false;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	EIF_DragType TargetType = EIF_DragType::Linear_X;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="SourceType != EIF_DragType_Source::Linear && SourceType != EIF_DragType_Source::Rotation && SourceType != EIF_DragType_Source::Angle"))
+	EIF_DragType_Target TargetType = EIF_DragType_Target::Linear_X;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="TargetType == EIF_DragType_Target::Linear_X || TargetType == EIF_DragType_Target::Linear_Y || TargetType == EIF_DragType_Target::Linear_Z"))
 	bool bTargetTypeIsWorldSpace = false;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	float Scale = 1;
-
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bClamp = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="bClamp"))
+	float Max = 0;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="bClamp"))
+	float Min = 0;
 
 	UPROPERTY()
 	USceneComponent* DragSourceComponent = nullptr;
 
 	bool bIsDraging = false;
 
-	FTransform SourceComponentTransform;
-	FTransform DragComponentTransform;
+	FTransform SourceComponentStartTM;
+	FTransform DragComponentStartTM;
+	FTransform RelativeTM_Angle;
+	FTransform RelativeTM_Roll;
+	FTransform RelativeTM_Pitch;
+	FTransform RelativeTM_Yaw;
+	FTransform RelativeTM;
 };

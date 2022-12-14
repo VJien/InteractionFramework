@@ -3,6 +3,8 @@
 
 #include "IF_DragComponent.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
 PRAGMA_DISABLE_OPTIMIZATION
 // Sets default values for this component's properties
 UIF_DragComponent::UIF_DragComponent()
@@ -30,81 +32,186 @@ void UIF_DragComponent::UpdateDrag(float Delta)
 	{
 		return;
 	}
-	const FTransform NewSource = DragSourceComponent->GetComponentTransform();
-	const FTransform DragCompTrans = GetComponentTransform();
+	const FTransform NewSourceTM = DragSourceComponent->GetComponentTransform();
+	const FTransform NewDragTM = GetComponentTransform();
+	float Offset = 0;
 	switch (SourceType)
 	{
-	case EIF_DragType::Linear_X:
+	case EIF_DragType_Source::Linear_X:
 		{
-			float Offset = 0;
 			if (bSourceInTargetSpace)
 			{
-				Offset = (DragCompTrans.InverseTransformPosition(NewSource.GetLocation()) -  DragCompTrans.InverseTransformPosition(SourceComponentTransform.GetLocation())).X * Scale;
+				Offset = (NewDragTM.InverseTransformPosition(NewSourceTM.GetLocation()) -  NewDragTM.InverseTransformPosition(SourceComponentStartTM.GetLocation())).X * Scale;
 			}
 			else
 			{
-				Offset = (NewSource.GetLocation() -  SourceComponentTransform.GetLocation()).X * Scale;
+				Offset = (NewSourceTM.GetLocation() -  SourceComponentStartTM.GetLocation()).X * Scale;
 			}
 			SetDragOffset(Offset);
 			break;
 		}
-	case EIF_DragType::Linear_Y:
+	case EIF_DragType_Source::Linear_Y:
 		{
-			float Offset = 0;
 			if (bSourceInTargetSpace)
 			{
-				Offset = (DragCompTrans.InverseTransformPosition(NewSource.GetLocation()) -  DragCompTrans.InverseTransformPosition(SourceComponentTransform.GetLocation())).Y * Scale;
+				Offset = (NewDragTM.InverseTransformPosition(NewSourceTM.GetLocation()) -  NewDragTM.InverseTransformPosition(SourceComponentStartTM.GetLocation())).Y * Scale;
 			}
 			else
 			{
-				Offset  = (NewSource.GetLocation() -  SourceComponentTransform.GetLocation()).Y * Scale;
+				Offset  = (NewSourceTM.GetLocation() -  SourceComponentStartTM.GetLocation()).Y * Scale;
 			}
 			SetDragOffset(Offset);
 			break;
 		}
-	case EIF_DragType::Linear_Z:
+	case EIF_DragType_Source::Linear_Z:
 		{
-			float Offset = 0;
 			if (bSourceInTargetSpace)
 			{
-				Offset = (DragCompTrans.InverseTransformPosition(NewSource.GetLocation()) -  DragCompTrans.InverseTransformPosition(SourceComponentTransform.GetLocation())).Z * Scale;
+				Offset = (NewDragTM.InverseTransformPosition(NewSourceTM.GetLocation()) -  NewDragTM.InverseTransformPosition(SourceComponentStartTM.GetLocation())).Z * Scale;
 			}
 			else
 			{
-				Offset  = (NewSource.GetLocation() -  SourceComponentTransform.GetLocation()).Z * Scale;
+				Offset  = (NewSourceTM.GetLocation() -  SourceComponentStartTM.GetLocation()).Z * Scale;
 			}
 			 
 			SetDragOffset(Offset);
 			break;
 		}
-	case EIF_DragType::Rotation_X:
+	case EIF_DragType_Source::Rotation_Roll:
 		{
+			if (bSourceInTargetSpace)
+			{
+				Offset =UKismetMathLibrary::NormalizedDeltaRotator(NewDragTM.InverseTransformRotation(NewSourceTM.GetRotation()).Rotator(),
+					NewDragTM.InverseTransformRotation(SourceComponentStartTM.GetRotation()).Rotator()).Roll * Scale;
+			}
+			else
+			{ 
+				Offset  = UKismetMathLibrary::NormalizedDeltaRotator(NewSourceTM.GetRotation().Rotator() , SourceComponentStartTM.GetRotation().Rotator()).Roll * Scale;
+			}
+			 
+			SetDragOffset(Offset);
+
 			break;
 		}
-	case EIF_DragType::Rotation_Y:
+	case EIF_DragType_Source::Rotation_Pitch:
 		{
+			if (bSourceInTargetSpace)
+			{
+				Offset =UKismetMathLibrary::NormalizedDeltaRotator(NewDragTM.InverseTransformRotation(NewSourceTM.GetRotation()).Rotator(),
+					NewDragTM.InverseTransformRotation(SourceComponentStartTM.GetRotation()).Rotator()).Pitch * Scale;
+			}
+			else
+			{ 
+				Offset  = UKismetMathLibrary::NormalizedDeltaRotator(NewSourceTM.GetRotation().Rotator() , SourceComponentStartTM.GetRotation().Rotator()).Pitch * Scale;
+			}
+			 
+			SetDragOffset(Offset);
+
 			break;
 		}
-	case EIF_DragType::Rotation_Z:
+	case EIF_DragType_Source::Rotation_Yaw:
 		{
+			if (bSourceInTargetSpace)
+			{
+				Offset =UKismetMathLibrary::NormalizedDeltaRotator(NewDragTM.InverseTransformRotation(NewSourceTM.GetRotation()).Rotator(),
+					NewDragTM.InverseTransformRotation(SourceComponentStartTM.GetRotation()).Rotator()).Yaw * Scale;
+			}
+			else
+			{ 
+				Offset  = UKismetMathLibrary::NormalizedDeltaRotator(NewSourceTM.GetRotation().Rotator() , SourceComponentStartTM.GetRotation().Rotator()).Yaw * Scale;
+			}
+			 
+			SetDragOffset(Offset);
+
 			break;
 		}
-	case EIF_DragType::Free:
+	case EIF_DragType_Source::Angle_Roll:
 		{
+			FTransform SpecialTransform;
+			SpecialTransform.SetLocation(NewDragTM.GetLocation());
+			FVector RollDir = (NewSourceTM.GetLocation() - NewDragTM.GetLocation());
+			RollDir = FVector::VectorPlaneProject(RollDir,NewDragTM.GetRotation().GetForwardVector());
+			FRotator SpecialRot = UKismetMathLibrary::MakeRotFromXY(NewDragTM.GetRotation().GetForwardVector(), RollDir);
+			SpecialTransform.SetRotation(SpecialRot.Quaternion());
+
+			FTransform TargetTransform = RelativeTM_Roll.Inverse() * SpecialTransform;
+			FRotator TargetRot = NewDragTM.GetRotation().Rotator();
+			TargetRot.Roll = TargetTransform.GetRotation().Rotator().Roll;
+			if (bClamp)
+			{
+				TargetRot.Roll = FMath::Clamp(TargetRot.Roll, DragComponentStartTM.GetRotation().Rotator().Roll + Min, DragComponentStartTM.GetRotation().Rotator().Roll + Max);
+			}
+			SetWorldRotation(TargetRot);
 			break;
 		}
-	case EIF_DragType::Angle_X:
+	case EIF_DragType_Source::Angle_Pitch:
 		{
+			FTransform SpecialTransform;
+			SpecialTransform.SetLocation(NewDragTM.GetLocation());
+
+			FVector PitchDir = (NewSourceTM.GetLocation() - NewDragTM.GetLocation());
+			PitchDir =  FVector::VectorPlaneProject(PitchDir, NewDragTM.GetRotation().GetRightVector());
+			
+			FRotator SpecialRot = UKismetMathLibrary::MakeRotFromXY(PitchDir.GetSafeNormal(), NewDragTM.GetRotation().GetRightVector() );
+			SpecialTransform.SetRotation(SpecialRot.Quaternion());
+			FTransform TargetTransform = RelativeTM_Pitch.Inverse() * SpecialTransform;
+			FRotator TargetRot = NewDragTM.GetRotation().Rotator();
+			TargetRot.Pitch = TargetTransform.GetRotation().Rotator().Pitch;
+			TargetRot.Normalize();
+			if (bClamp)
+			{
+				TargetRot.Pitch = FMath::Clamp(TargetRot.Pitch,Min,Max);
+			}
+			SetWorldRotation(TargetRot);
 			break;
 		}
-	case EIF_DragType::Angle_Y:
+	case EIF_DragType_Source::Angle_Yaw:
 		{
+			FTransform SpecialTransform;
+			SpecialTransform.SetLocation(NewDragTM.GetLocation());
+			FVector YawDir = (NewSourceTM.GetLocation() - NewDragTM.GetLocation());
+			YawDir.Z = 0;
+			FRotator SpecialRot = UKismetMathLibrary::MakeRotFromYZ( YawDir.GetSafeNormal(),NewDragTM.GetRotation().GetUpVector() * -1);
+			SpecialTransform.SetRotation(SpecialRot.Quaternion());
+			
+			FTransform TargetTransform = RelativeTM_Yaw * SpecialTransform;
+			FRotator TargetRot = NewDragTM.GetRotation().Rotator();
+			TargetRot.Yaw = TargetTransform.GetRotation().Rotator().Yaw;
+			if (bClamp)
+			{
+				TargetRot.Yaw = FMath::Clamp(TargetRot.Yaw,DragComponentStartTM.GetRotation().Rotator().Yaw+Min,DragComponentStartTM.GetRotation().Rotator().Yaw+Max);
+			}
+			
+			SetWorldRotation(TargetRot);
 			break;
 		}
-	case EIF_DragType::Angle_Z:
+	case EIF_DragType_Source::Linear:
 		{
+			FTransform TargetTransform = RelativeTM.Inverse() * NewSourceTM;
+			SetWorldLocation(TargetTransform.GetLocation());
 			break;
 		}
+	case EIF_DragType_Source::Rotation:
+		{
+			FTransform TargetTransform = RelativeTM.Inverse() * NewSourceTM;
+			SetWorldRotation(TargetTransform.GetRotation());
+			break;
+		}
+	case EIF_DragType_Source::Angle:
+		{
+			
+			FTransform SpecialTransform;
+			SpecialTransform.SetLocation(NewDragTM.GetLocation());
+			FVector Dir = (NewSourceTM.GetLocation() - NewDragTM.GetLocation());
+			FRotator SpecialRot = UKismetMathLibrary::MakeRotFromX( Dir.GetSafeNormal());
+			SpecialTransform.SetRotation(SpecialRot.Quaternion());
+			
+			FTransform TargetTransform = RelativeTM_Angle.Inverse() * SpecialTransform;
+			FRotator TargetRot = TargetTransform.GetRotation().Rotator();
+			SetWorldRotation(TargetRot);
+			break;
+		}
+
 		default:break;
 	}
 }
@@ -115,10 +222,14 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 	{
 		return;
 	}
-	FTransform TargetTransform = DragComponentTransform;
+	if (bClamp)
+	{
+		Offset = FMath::Clamp(Offset, Min, Max);
+	}
+	FTransform TargetTransform = DragComponentStartTM;
 	switch (TargetType)
 	{
-	case EIF_DragType::Linear_X:
+	case EIF_DragType_Target::Linear_X:
 		{
 			if (bTargetTypeIsWorldSpace)
 			{
@@ -131,7 +242,7 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 			}
 			break;
 		}
-	case EIF_DragType::Linear_Y:
+	case EIF_DragType_Target::Linear_Y:
 		{
 			if (bTargetTypeIsWorldSpace)
 			{
@@ -144,7 +255,7 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 			}
 			break;
 		}
-	case EIF_DragType::Linear_Z:
+	case EIF_DragType_Target::Linear_Z:
 		{
 			if (bTargetTypeIsWorldSpace)
 			{
@@ -157,32 +268,26 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 			}
 			break;
 		}
-	case EIF_DragType::Rotation_X:
+	case EIF_DragType_Target::Rotation_Roll:
 		{
+			FRotator Rot = TargetTransform.GetRotation().Rotator();
+			Rot.Roll += Offset;
+			TargetTransform.SetRotation(Rot.Quaternion());
+			
 			break;
 		}
-	case EIF_DragType::Rotation_Y:
+	case EIF_DragType_Target::Rotation_Pitch:
 		{
+			FRotator Rot = TargetTransform.GetRotation().Rotator();
+			Rot.Pitch += Offset;
+			TargetTransform.SetRotation(Rot.Quaternion());
 			break;
 		}
-	case EIF_DragType::Rotation_Z:
+	case EIF_DragType_Target::Rotation_Yaw:
 		{
-			break;
-		}
-	case EIF_DragType::Free:
-		{
-			break;
-		}
-	case EIF_DragType::Angle_X:
-		{
-			break;
-		}
-	case EIF_DragType::Angle_Y:
-		{
-			break;
-		}
-	case EIF_DragType::Angle_Z:
-		{
+			FRotator Rot = TargetTransform.GetRotation().Rotator();
+			Rot.Yaw += Offset;
+			TargetTransform.SetRotation(Rot.Quaternion());
 			break;
 		}
 	default:break;
@@ -214,8 +319,35 @@ bool UIF_DragComponent::StartDrag(USceneComponent* SourceComponent)
 	}
 	DragSourceComponent = SourceComponent;
 	bIsDraging = true;
-	SourceComponentTransform = SourceComponent->GetComponentTransform();
-	DragComponentTransform = GetComponentTransform();
+	SourceComponentStartTM = SourceComponent->GetComponentTransform();
+	DragComponentStartTM = GetComponentTransform();
+	FTransform SpecialTransform;
+	SpecialTransform.SetLocation(DragComponentStartTM.GetLocation());
+	FVector RollDir = (SourceComponentStartTM.GetLocation() - DragComponentStartTM.GetLocation());
+	RollDir = FVector::VectorPlaneProject(RollDir,DragComponentStartTM.GetRotation().GetForwardVector());
+	FRotator SpecialRot = UKismetMathLibrary::MakeRotFromXY(DragComponentStartTM.GetRotation().GetForwardVector(), RollDir.GetSafeNormal());
+	SpecialTransform.SetRotation(SpecialRot.Quaternion());
+	RelativeTM_Roll = SpecialTransform.GetRelativeTransform(DragComponentStartTM);
+
+	FVector PitchDir = (SourceComponentStartTM.GetLocation() - DragComponentStartTM.GetLocation());
+	PitchDir = FVector::VectorPlaneProject(PitchDir, DragComponentStartTM.GetRotation().GetRightVector());
+	SpecialRot = UKismetMathLibrary::MakeRotFromXY( PitchDir.GetSafeNormal(), DragComponentStartTM.GetRotation().GetRightVector());
+	SpecialTransform.SetRotation(SpecialRot.Quaternion());
+	RelativeTM_Pitch = SpecialTransform.GetRelativeTransform(DragComponentStartTM);
+
+	FVector YawDir = (SourceComponentStartTM.GetLocation() - DragComponentStartTM.GetLocation());
+	YawDir.Z = 0;
+	SpecialRot = UKismetMathLibrary::MakeRotFromYZ( YawDir.GetSafeNormal(),SourceComponentStartTM.GetRotation().GetUpVector() * -1);
+	SpecialTransform.SetRotation(SpecialRot.Quaternion());
+	RelativeTM_Yaw = SpecialTransform.GetRelativeTransform(DragComponentStartTM);
+
+	FVector Dir = (SourceComponentStartTM.GetLocation() - DragComponentStartTM.GetLocation());
+	SpecialRot = UKismetMathLibrary::MakeRotFromX( Dir.GetSafeNormal());
+	SpecialTransform.SetRotation(SpecialRot.Quaternion());
+	RelativeTM_Angle =  SpecialTransform.GetRelativeTransform(DragComponentStartTM);
+
+	
+	RelativeTM = SourceComponentStartTM.GetRelativeTransform(DragComponentStartTM);
 	return true;
 }
 
