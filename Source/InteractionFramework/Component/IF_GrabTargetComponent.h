@@ -59,7 +59,11 @@ public:
 	{
 		return GrabStat;
 	};
-
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EIF_VRHandType GetHandType()
+	{
+		return HandType;
+	}
 	
 protected:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)

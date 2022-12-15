@@ -40,7 +40,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Common)
 	bool bIgnoreOwner = true;
 	//开启类型过滤, 如果下面没有任何过滤参数, 建议关闭此值, 节省开销
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Common")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Common", meta=(EditCondition="bMultiTrace"))
 	bool bEnableFilter = true;
 	//检测类的类型, 空以为所有
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Common|Filter", meta=(EditCondition="bEnableFilter"))
@@ -108,7 +108,7 @@ public:
 	FVector Extend = FVector(10.0f);
 };
 //**************************Overlap***************************
-//该类型只有获取Actor的方式
+
 UCLASS(BlueprintType, Abstract)
 class UIF_TargetCheckConfig_Overlap : public UIF_TargetCheckConfig
 {
@@ -116,10 +116,13 @@ class UIF_TargetCheckConfig_Overlap : public UIF_TargetCheckConfig
 protected:
 	virtual UPrimitiveComponent* CreateOverlapComponent(USceneComponent* SourceCompennt);
 	virtual AActor* GetBestActor(USceneComponent* SourceCompennt, const TArray<AActor*>& Actors);
+	virtual UPrimitiveComponent* GetBestComponent(USceneComponent* SourceCompennt, const TArray<UPrimitiveComponent*> Components);
 public:
 	virtual AActor* GetActor_Implementation(USceneComponent* SourceCompennt) override;
 	
+	UPROPERTY()
 	UPrimitiveComponent* OverlapComponent = nullptr;
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Overlap)
 	TEnumAsByte<ECollisionChannel> CollisionType = ECC_WorldDynamic;
 
@@ -129,7 +132,7 @@ public:
 	bool bDrawDebug = false;
 
 };
-//该类型只有获取Actor的方式
+
 UCLASS(BlueprintType, DisplayName=Sphere)
 class UIF_TargetCheckConfig_SphereOverlap : public UIF_TargetCheckConfig_Overlap
 {
@@ -138,11 +141,11 @@ protected:
 	virtual UPrimitiveComponent* CreateOverlapComponent(USceneComponent* SourceCompennt) override;
 public:
 	virtual AActor* GetActor_Implementation(USceneComponent* SourceCompennt) override;
-	
+	virtual FHitResult GetHitResult_Implementation(USceneComponent* SourceCompennt) override;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Sphere)
 	float Radius = 10.f;
 };
-//该类型只有获取Actor的方式
+
 UCLASS(BlueprintType, DisplayName=Box)
 class UIF_TargetCheckConfig_BoxOverlap : public UIF_TargetCheckConfig_Overlap
 {
@@ -151,7 +154,8 @@ protected:
 	virtual UPrimitiveComponent* CreateOverlapComponent(USceneComponent* SourceCompennt) override;
 public:
 	virtual AActor* GetActor_Implementation(USceneComponent* SourceCompennt) override;
-	
+	virtual FHitResult GetHitResult_Implementation(USceneComponent* SourceCompennt) override;
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Box)
 	FVector Extent = FVector(10);
 };
@@ -221,6 +225,12 @@ protected:
 	TSubclassOf<USceneComponent> CheckComponentClass = nullptr;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	TSubclassOf<UIF_ComponentCheckRule> ComponentCheckRule = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bCheckActor = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bCheckHitResult = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition=bCheckHitResult))
+	bool bCheckComponent = false;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, Instanced)
 	UIF_TargetCheckConfig* Type;
 	

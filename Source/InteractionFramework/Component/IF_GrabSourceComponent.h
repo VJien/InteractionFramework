@@ -38,7 +38,9 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 
-
+	//如果Hand == None, 那么根据Tag匹配
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool GrabComponent(UIF_GrabTargetComponent* TargetComponent,  EIF_GrabStat& OutStat);
 	//如果Hand == None, 那么根据Tag匹配
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool Grab(AActor* TargetActor,EIF_VRHandType Hand, FName Tag, EIF_GrabStat& OutStat, UIF_GrabTargetComponent*& TargetComponent);

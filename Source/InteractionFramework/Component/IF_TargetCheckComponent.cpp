@@ -521,12 +521,34 @@ AActor* UIF_TargetCheckConfig_Overlap::GetBestActor(USceneComponent* SourceCompe
 
 }
 
+UPrimitiveComponent* UIF_TargetCheckConfig_Overlap::GetBestComponent(USceneComponent* SourceCompennt,
+	const TArray<UPrimitiveComponent*> Components)
+{
+	if (Components.Num() ==0 || SourceCompennt == nullptr)
+	{
+		return nullptr;
+	}
+	if (Components.Num() == 1)
+	{
+		return Components[0];
+	}
+	float Dist = FLT_MAX;
+	UPrimitiveComponent* BestComponent = nullptr;
+	for (auto C: Components)
+	{
+		float NewDist = (SourceCompennt->GetComponentLocation() - C->GetComponentLocation()).SizeSquared();
+		if (NewDist < Dist)
+		{
+			Dist = NewDist;
+			BestComponent = C;
+		}
+	}
+	return BestComponent;
+}
+
+
 AActor* UIF_TargetCheckConfig_Overlap::GetActor_Implementation(USceneComponent* SourceCompennt)
 {
-	if (OverlapComponent == nullptr)
-	{
-		OverlapComponent = CreateOverlapComponent(SourceCompennt);
-	}
 	return nullptr;
 }
 UPrimitiveComponent* UIF_TargetCheckConfig_SphereOverlap::CreateOverlapComponent(USceneComponent* SourceCompennt)
@@ -544,9 +566,15 @@ UPrimitiveComponent* UIF_TargetCheckConfig_SphereOverlap::CreateOverlapComponent
 	return OverlapComponent;
 }
 
+
+
+
 AActor* UIF_TargetCheckConfig_SphereOverlap::GetActor_Implementation(USceneComponent* SourceCompennt)
 {
-	Super::GetActor_Implementation(SourceCompennt);
+	if (OverlapComponent == nullptr)
+	{
+		OverlapComponent = CreateOverlapComponent(SourceCompennt);
+	}
 	if (!SourceCompennt || !OverlapComponent)
 	{
 		return nullptr;
@@ -559,6 +587,31 @@ AActor* UIF_TargetCheckConfig_SphereOverlap::GetActor_Implementation(USceneCompo
 	OverlapComponent->GetOverlappingActors(Actors, ClassOnlyCheck);
 	
 	return GetBestActor(SourceCompennt, Actors);
+}
+
+FHitResult UIF_TargetCheckConfig_SphereOverlap::GetHitResult_Implementation(USceneComponent* SourceCompennt)
+{
+	FHitResult Result;
+	if (OverlapComponent == nullptr)
+	{
+		OverlapComponent = CreateOverlapComponent(SourceCompennt);
+	}
+	if (!SourceCompennt || !OverlapComponent)
+	{
+		return Result;
+	}
+	FVector HitLoc;
+	FName HitBone;
+	TArray<UPrimitiveComponent*> OverlapComps;
+	OverlapComponent->GetOverlappingComponents(OverlapComps);
+	UPrimitiveComponent* BestComp = GetBestComponent(SourceCompennt, OverlapComps);
+	if (BestComp == nullptr)
+	{
+		return Result;
+	}
+	BestComp->K2_SphereTraceComponent(SourceCompennt->GetComponentLocation(),BestComp->GetComponentLocation(), Radius*0.8,false,
+		bDrawDebug,false, HitLoc,HitLoc,HitBone,Result);
+	return Result;
 }
 
 
@@ -579,7 +632,10 @@ UPrimitiveComponent* UIF_TargetCheckConfig_BoxOverlap::CreateOverlapComponent(US
 
 AActor* UIF_TargetCheckConfig_BoxOverlap::GetActor_Implementation(USceneComponent* SourceCompennt)
 {
-	Super::GetActor_Implementation(SourceCompennt);
+	if (OverlapComponent == nullptr)
+	{
+		OverlapComponent = CreateOverlapComponent(SourceCompennt);
+	}
 	if (!SourceCompennt || !OverlapComponent)
 	{
 		return nullptr;
@@ -592,6 +648,31 @@ AActor* UIF_TargetCheckConfig_BoxOverlap::GetActor_Implementation(USceneComponen
 	OverlapComponent->GetOverlappingActors(Actors,ClassOnlyCheck);
 
 	return GetBestActor(SourceCompennt, Actors);
+}
+
+FHitResult UIF_TargetCheckConfig_BoxOverlap::GetHitResult_Implementation(USceneComponent* SourceCompennt)
+{
+	FHitResult Result;
+	if (OverlapComponent == nullptr)
+	{
+		OverlapComponent = CreateOverlapComponent(SourceCompennt);
+	}
+	if (!SourceCompennt || !OverlapComponent)
+	{
+		return Result;
+	}
+	TArray<UPrimitiveComponent*> OverlapComps;
+	OverlapComponent->GetOverlappingComponents(OverlapComps);
+	UPrimitiveComponent* BestComp = GetBestComponent(SourceCompennt, OverlapComps);
+	if (BestComp == nullptr)
+	{
+		return Result;
+	}
+	FVector HitLoc;
+	FName HitBone;
+	OverlapComponent->K2_SphereTraceComponent(SourceCompennt->GetComponentLocation(),BestComp->GetComponentLocation(), Extent.Size()*0.5,false,
+		bDrawDebug,false, HitLoc,HitLoc,HitBone,Result);
+	return Result;
 }
 
 
@@ -668,27 +749,38 @@ void UIF_TargetCheckComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		if (Type)
 		{
-			AActor* NewActor = Type->GetActor(this);
-			if (!(NewActor == nullptr && bRememberLastTarget) && NewActor != CurrentBestActor )
+			if (bCheckActor)
 			{
-				OnActorUpdated.Broadcast(NewActor, CurrentBestActor);
-				CurrentBestActor = NewActor;
-			}
-		
-			FHitResult NewHit = Type->GetHitResult(this);
-			if ((NewHit.GetActor() != CurrentBestHit.GetActor() || NewHit.GetComponent() != CurrentBestHit.GetComponent() ||
-				NewHit.ImpactPoint != CurrentBestHit.ImpactPoint) && !(!NewHit.IsValidBlockingHit() && bRememberLastTarget))
-			{
-				OnHitResultUpdated.Broadcast(NewHit, CurrentBestHit);
-				CurrentBestHit = NewHit;
-				auto BestComp = GetNearestComponent(CurrentBestHit.GetActor(), CurrentBestHit.ImpactPoint);
-				if (BestComp != CurrComponent)
+				AActor* NewActor = Type->GetActor(this);
+				if (!(NewActor == nullptr && bRememberLastTarget) && NewActor != CurrentBestActor )
 				{
-					LastComponent = CurrComponent;
-					CurrComponent = BestComp;
-					OnComponentUpdated.Broadcast(CurrComponent, LastComponent);
+					OnActorUpdated.Broadcast(NewActor, CurrentBestActor);
+					CurrentBestActor = NewActor;
 				}
 			}
+
+			if (bCheckHitResult)
+			{
+				FHitResult NewHit = Type->GetHitResult(this);
+				if ((NewHit.GetActor() != CurrentBestHit.GetActor() || NewHit.GetComponent() != CurrentBestHit.GetComponent() ||
+					NewHit.ImpactPoint != CurrentBestHit.ImpactPoint) && !(!NewHit.IsValidBlockingHit() && bRememberLastTarget))
+				{
+					OnHitResultUpdated.Broadcast(NewHit, CurrentBestHit);
+					CurrentBestHit = NewHit;
+					if (bCheckComponent)
+					{
+						auto BestComp = GetNearestComponent(CurrentBestHit.GetActor(), CurrentBestHit.ImpactPoint);
+						if (BestComp != CurrComponent)
+						{
+							LastComponent = CurrComponent;
+							CurrComponent = BestComp;
+							OnComponentUpdated.Broadcast(CurrComponent, LastComponent);
+						}
+					}
+					
+				}
+			}
+			
 		}
 		CurrTime = 0;
 	}

@@ -43,8 +43,29 @@ void UIF_GrabSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
+bool UIF_GrabSourceComponent::GrabComponent_Implementation(UIF_GrabTargetComponent* TargetComponent,
+	 EIF_GrabStat& OutStat)
+{
+	if (!TargetComponent || !IsWorking())
+	{
+		return false;
+	}
+	if (TargetComponent->GetHandType() == EIF_VRHandType::None)
+	{
+		return false;
+	}
+	MatchedTargetCompoennt = TargetComponent;
+	if (MatchedTargetCompoennt->BeGrab(this,OutStat))
+	{
+		GrabedActor = TargetComponent->GetOwner();
+		OnPreGrab.Broadcast(GrabedActor, MatchedTargetCompoennt,MatchedTargetCompoennt->GetGrabStat());
+		return true;
+	}
+	return false;
+}
+
 void UIF_GrabSourceComponent::NotifyGrabed(AActor* GrabActor, UIF_GrabTargetComponent* TargetComponent,
-	EIF_GrabStat Stat)
+                                           EIF_GrabStat Stat)
 {
 	OnGrab.Broadcast(GrabActor, TargetComponent, Stat);
 }
@@ -70,8 +91,13 @@ void UIF_GrabSourceComponent::Release_Implementation()
 	if (MatchedTargetCompoennt)
 	{
 		MatchedTargetCompoennt->BeRelease();
+		OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt, MatchedTargetCompoennt->GetGrabStat());
 	}
-	OnRelease.Broadcast(GrabedActor, MatchedTargetCompoennt, MatchedTargetCompoennt->GetGrabStat());
+	else
+	{
+		OnRelease.Broadcast(GrabedActor, nullptr, EIF_GrabStat::None);
+	}
+
 	MatchedTargetCompoennt = nullptr;
 	GrabedActor = nullptr;
 	
@@ -125,9 +151,10 @@ bool UIF_GrabSourceComponent::Grab_Implementation(AActor* TargetActor, EIF_VRHan
 	{
 		GrabedActor = TargetActor;
 		OnPreGrab.Broadcast(TargetActor, MatchedTargetCompoennt,MatchedTargetCompoennt->GetGrabStat());
+		TargetComponent = MatchedTargetCompoennt;
+		return true;
 	}
+	return false;
 	
-	TargetComponent = MatchedTargetCompoennt;
-	return true;
 }
 
