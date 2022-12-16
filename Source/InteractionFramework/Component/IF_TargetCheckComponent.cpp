@@ -745,6 +745,10 @@ void UIF_TargetCheckComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
                                               FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!IsWorking())
+	{
+		return;
+	}
 	if (CurrTime >= CheckInterval || CheckInterval <=0)
 	{
 		if (Type)
