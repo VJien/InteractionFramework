@@ -9,6 +9,7 @@
 #include "OpenVRExpansionFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
 
 TEnumAsByte<EWorldType::Type> UIF_BlueprintLibrary::GetWorldType(UObject* WorldContext)
 {
@@ -154,23 +155,23 @@ void UIF_BlueprintLibrary::CalcHitDirection( FVector HitPoint, FVector Origin, F
 	float DotRt = Right | HitDir;
 	float DegFwd = UKismetMathLibrary::DegAcos(DotFwd);
 	float DegRt = UKismetMathLibrary::DegAcos(DotRt);
-	float ModFwd = FMath::Fmod(DegFwd, 45.f / 2);
+	int32 Fwd = FMath::RoundToInt(DegFwd / (45.f / 2));
 	
 	if (DotRt > 0)
 	{
-		if (ModFwd<=1)
+		if (Fwd<=1)
 		{
 			Direction = EIF_Direction::Front;
 		}
-		else if (ModFwd<=3 && ModFwd>1)
+		else if (Fwd<=3 && Fwd>1)
 		{
 			Direction = EIF_Direction::FrontRight;
 		}
-		else if (ModFwd <=5 && ModFwd>3)
+		else if (Fwd <=5 && Fwd>3)
 		{
 			Direction = EIF_Direction::Right;
 		}
-		else if (ModFwd <=3 && ModFwd>5)
+		else if (Fwd <=3 && Fwd>5)
 		{
 			Direction = EIF_Direction::BackRight;
 		}
@@ -181,19 +182,19 @@ void UIF_BlueprintLibrary::CalcHitDirection( FVector HitPoint, FVector Origin, F
 	}
 	else
 	{
-		if (ModFwd<=1)
+		if (Fwd<=1)
 		{
 			Direction = EIF_Direction::Front;
 		}
-		else if (ModFwd<=3 && ModFwd>1)
+		else if (Fwd<=3 && Fwd>1)
 		{
 			Direction = EIF_Direction::FrontLeft;
 		}
-		else if (ModFwd <=5 && ModFwd>3)
+		else if (Fwd <=5 && Fwd>3)
 		{
 			Direction = EIF_Direction::Left;
 		}
-		else if (ModFwd <=3 && ModFwd>5)
+		else if (Fwd <=3 && Fwd>5)
 		{
 			Direction = EIF_Direction::BackLeft;
 		}
@@ -204,3 +205,6 @@ void UIF_BlueprintLibrary::CalcHitDirection( FVector HitPoint, FVector Origin, F
 	}
 	
 }
+
+
+PRAGMA_ENABLE_OPTIMIZATION
