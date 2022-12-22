@@ -558,6 +558,7 @@ UPrimitiveComponent* UIF_TargetCheckConfig_SphereOverlap::CreateOverlapComponent
 		auto Sphere = Cast<USphereComponent>(SourceCompennt->GetOwner()->AddComponentByClass(USphereComponent::StaticClass(),true, FTransform(),false));
 		Sphere->SetSphereRadius(Radius);
 		Sphere->SetCollisionObjectType(CollisionType);
+		Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		Sphere->AttachToComponent(SourceCompennt, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		Sphere->SetGenerateOverlapEvents(true);
 		OverlapComponent = Sphere;
@@ -619,12 +620,13 @@ UPrimitiveComponent* UIF_TargetCheckConfig_BoxOverlap::CreateOverlapComponent(US
 {
 	if (SourceCompennt)
 	{
-		auto Sphere = Cast<UBoxComponent>(SourceCompennt->GetOwner()->AddComponentByClass(UBoxComponent::StaticClass(),true, FTransform(),false));
-		Sphere->SetBoxExtent(Extent);
-		Sphere->SetCollisionObjectType(CollisionType);
-		Sphere->AttachToComponent(SourceCompennt, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		Sphere->SetGenerateOverlapEvents(true);
-		OverlapComponent = Sphere;
+		auto Box = Cast<UBoxComponent>(SourceCompennt->GetOwner()->AddComponentByClass(UBoxComponent::StaticClass(),true, FTransform(),false));
+		Box->SetBoxExtent(Extent);
+		Box->SetCollisionObjectType(CollisionType);
+		Box->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		Box->AttachToComponent(SourceCompennt, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		Box->SetGenerateOverlapEvents(true);
+		OverlapComponent = Box;
 		 
 	}
 	return OverlapComponent;

@@ -21,7 +21,7 @@ UIF_DragComponent::UIF_DragComponent()
 void UIF_DragComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	CurrOffset = 0;
 	// ...
 	
 }
@@ -33,7 +33,7 @@ void UIF_DragComponent::UpdateDrag(float Delta)
 		return;
 	}
 	const FTransform NewSourceTM = DragSourceComponent->GetComponentTransform();
-	const FTransform NewDragTM = GetComponentTransform();
+	const FTransform NewDragTM = GetComponentTransform(); 
 	float Offset = 0;
 	switch (SourceType)
 	{
@@ -222,9 +222,12 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 	{
 		return;
 	}
+	float Percent = 1;
 	if (bClamp)
 	{
-		Offset = FMath::Clamp(Offset, Min, Max);
+		Offset = FMath::Clamp(Offset, Min - SavedOffset, Max - SavedOffset);
+		CurrOffset = Offset + SavedOffset ;
+		Percent = FMath::Clamp((Offset - (Min - SavedOffset)) / (Max - Min),0.f,1.f);
 	}
 	FTransform TargetTransform = DragComponentStartTM;
 	switch (TargetType)
@@ -237,9 +240,12 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 			}
 			else
 			{
-				FVector Location = GetForwardVector() * Offset + TargetTransform.GetLocation();
+				FTransform CurrTM = DragComponentStartRelativeTM * DragSourceParentComponent->GetComponentTransform();
+				FVector Location = CurrTM.GetRotation().Vector() * Offset + CurrTM.GetLocation();
 				TargetTransform.SetLocation(Location);
+				TargetTransform.SetRotation(CurrTM.GetRotation());
 			}
+			OnDragTransition.Broadcast(Percent, EIF_DragType_Target::Linear_X);
 			break;
 		}
 	case EIF_DragType_Target::Linear_Y:
@@ -250,9 +256,12 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 			}
 			else
 			{
-				FVector Location = GetRightVector() * Offset + TargetTransform.GetLocation();
+				FTransform CurrTM = DragComponentStartRelativeTM * DragSourceParentComponent->GetComponentTransform();
+				FVector Location = UKismetMathLibrary::GetRightVector(CurrTM.Rotator()) * Offset + CurrTM.GetLocation();
 				TargetTransform.SetLocation(Location);
+				TargetTransform.SetRotation(CurrTM.GetRotation());
 			}
+			OnDragTransition.Broadcast(Percent, EIF_DragType_Target::Linear_Y);
 			break;
 		}
 	case EIF_DragType_Target::Linear_Z:
@@ -263,9 +272,12 @@ void UIF_DragComponent::SetDragOffset(float Offset)
 			}
 			else
 			{
-				FVector Location = GetUpVector() * Offset + TargetTransform.GetLocation();
+				FTransform CurrTM = DragComponentStartRelativeTM * DragSourceParentComponent->GetComponentTransform();
+				FVector Location = UKismetMathLibrary::GetUpVector(CurrTM.Rotator()) * Offset + CurrTM.GetLocation();
 				TargetTransform.SetLocation(Location);
+				TargetTransform.SetRotation(CurrTM.GetRotation());
 			}
+			OnDragTransition.Broadcast(Percent, EIF_DragType_Target::Linear_Z);
 			break;
 		}
 	case EIF_DragType_Target::Rotation_Roll:
@@ -321,6 +333,8 @@ bool UIF_DragComponent::StartDrag(USceneComponent* SourceComponent)
 	bIsDraging = true;
 	SourceComponentStartTM = SourceComponent->GetComponentTransform();
 	DragComponentStartTM = GetComponentTransform();
+	DragSourceParentComponent = GetAttachParent();
+	DragComponentStartRelativeTM = GetRelativeTransform();
 	FTransform SpecialTransform;
 	SpecialTransform.SetLocation(DragComponentStartTM.GetLocation());
 	FVector RollDir = (SourceComponentStartTM.GetLocation() - DragComponentStartTM.GetLocation());
@@ -348,6 +362,8 @@ bool UIF_DragComponent::StartDrag(USceneComponent* SourceComponent)
 
 	
 	RelativeTM = SourceComponentStartTM.GetRelativeTransform(DragComponentStartTM);
+
+	OnStartDrag.Broadcast(SourceComponent);
 	return true;
 }
 
@@ -359,6 +375,9 @@ void UIF_DragComponent::StopDrag(USceneComponent* SourceComponent)
 	}
 	DragSourceComponent = nullptr;
 	bIsDraging = false;
+	SavedOffset = CurrOffset;
+	CurrOffset = 0;
+	OnStopDrag.Broadcast(SourceComponent);
 }
 
 

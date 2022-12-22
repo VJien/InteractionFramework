@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Base/IF_HandTypeComponent.h"
 #include "Base/IF_SceneComponent.h"
 
 #include "InteractionFramework/Data/IFTypes.h"
@@ -16,7 +17,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FIF_OnGrabEvent, AActor*, GrabAct
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FIF_OnReleaseEvent);
 
 UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
-class INTERACTIONFRAMEWORK_API UIF_GrabSourceComponent : public UIF_SceneComponent
+class INTERACTIONFRAMEWORK_API UIF_GrabSourceComponent : public UIF_HandTypeComponent
 {
 	GENERATED_BODY()
 
@@ -61,9 +62,6 @@ protected:
 	AActor* GrabedActor = nullptr;
 	UPROPERTY(BlueprintReadWrite)
 	UIF_GrabTargetComponent* MatchedTargetCompoennt = nullptr;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	EIF_VRHandType HandType = EIF_VRHandType::None;
 	
 
 	

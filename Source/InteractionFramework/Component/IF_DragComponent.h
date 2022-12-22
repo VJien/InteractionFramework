@@ -3,13 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Base/IF_HandTypeComponent.h"
 #include "Base/IF_SceneComponent.h"
 #include "InteractionFramework/Data/IFTypes.h"
 #include "IF_DragComponent.generated.h"
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDragEvent_Transition, float, Value, EIF_DragType_Target, TargetType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDragEvent, USceneComponent*, SourceComponet);
 UCLASS(ClassGroup=(InteractionFramework), meta=(BlueprintSpawnableComponent))
-class INTERACTIONFRAMEWORK_API UIF_DragComponent : public UIF_SceneComponent
+class INTERACTIONFRAMEWORK_API UIF_DragComponent : public UIF_HandTypeComponent
 {
 	GENERATED_BODY()
 
@@ -35,12 +38,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopDrag(USceneComponent* SourceComponent);
 
+
+	UPROPERTY(BlueprintAssignable,BlueprintCallable)
+	FOnDragEvent_Transition OnDragTransition;
+	UPROPERTY(BlueprintAssignable,BlueprintCallable)
+	FOnDragEvent OnStartDrag;
+	UPROPERTY(BlueprintAssignable,BlueprintCallable)
+	FOnDragEvent OnStopDrag;
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	bool bDebug = false;
-	//哪只手操作
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
-	EIF_VRHandType HandType = EIF_VRHandType::None;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
 	EIF_DragType_Source SourceType = EIF_DragType_Source::Linear_X;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition="SourceType == EIF_DragType_Source::Linear_X || SourceType == EIF_DragType_Source::Linear_Y || SourceType == EIF_DragType_Source::Linear_Z"))
@@ -60,14 +68,19 @@ protected:
 
 	UPROPERTY()
 	USceneComponent* DragSourceComponent = nullptr;
-
+	UPROPERTY()
+	USceneComponent* DragSourceParentComponent = nullptr;
 	bool bIsDraging = false;
 
 	FTransform SourceComponentStartTM;
 	FTransform DragComponentStartTM;
+	FTransform DragComponentStartRelativeTM;
 	FTransform RelativeTM_Angle;
 	FTransform RelativeTM_Roll;
 	FTransform RelativeTM_Pitch;
 	FTransform RelativeTM_Yaw;
 	FTransform RelativeTM;
+
+	float CurrOffset = 0;
+	float SavedOffset = 0;
 };
