@@ -124,7 +124,7 @@ public:
 	UPrimitiveComponent* OverlapComponent = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Overlap)
-	TEnumAsByte<ECollisionChannel> CollisionType = ECC_WorldDynamic;
+	FName CollisionProfile = NAME_None;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Overlap, meta=(EditCondition="bMultiTrace"))
 	EIF_TargetCheckMultiResultRule MultiCheckRule = EIF_TargetCheckMultiResultRule::Default;

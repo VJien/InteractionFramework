@@ -28,13 +28,11 @@ struct FPoolData
 };
 
 UCLASS(DisplayName="AI Manager")
-class INTERACTIONFRAMEWORK_API UIF_AI_Manager : public UTickableWorldSubsystem
+class INTERACTIONFRAMEWORK_API UIF_AI_Manager : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Tick(float DeltaTime) override;
-	virtual TStatId GetStatId() const override { return TStatId(); };
 
 public:
 	UFUNCTION(BlueprintCallable)

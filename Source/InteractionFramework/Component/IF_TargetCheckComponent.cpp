@@ -557,7 +557,7 @@ UPrimitiveComponent* UIF_TargetCheckConfig_SphereOverlap::CreateOverlapComponent
 	{
 		auto Sphere = Cast<USphereComponent>(SourceCompennt->GetOwner()->AddComponentByClass(USphereComponent::StaticClass(),true, FTransform(),false));
 		Sphere->SetSphereRadius(Radius);
-		Sphere->SetCollisionObjectType(CollisionType);
+		Sphere->SetCollisionProfileName(CollisionProfile);
 		Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		Sphere->AttachToComponent(SourceCompennt, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		Sphere->SetGenerateOverlapEvents(true);
@@ -622,7 +622,7 @@ UPrimitiveComponent* UIF_TargetCheckConfig_BoxOverlap::CreateOverlapComponent(US
 	{
 		auto Box = Cast<UBoxComponent>(SourceCompennt->GetOwner()->AddComponentByClass(UBoxComponent::StaticClass(),true, FTransform(),false));
 		Box->SetBoxExtent(Extent);
-		Box->SetCollisionObjectType(CollisionType);
+		Box->SetCollisionProfileName(CollisionProfile);
 		Box->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		Box->AttachToComponent(SourceCompennt, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		Box->SetGenerateOverlapEvents(true);

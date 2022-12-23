@@ -16,10 +16,6 @@ void UIF_AI_Manager::Initialize(FSubsystemCollectionBase& Collection)
 
 }
 
-void UIF_AI_Manager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 
 void UIF_AI_Manager::RegisterAI(TScriptInterface<IIF_PoolItem> AI, FName Group)
 {
