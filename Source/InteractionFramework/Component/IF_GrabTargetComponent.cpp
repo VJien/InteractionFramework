@@ -76,6 +76,27 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			bIsTwoHandGrab = true;
 			FTransform OtherSourceTM = OtherGrabTargetComponent->GrabSourceComponent->GetComponentTransform();
 			FTransform SourceTM=  GrabSourceComponent->GetComponentTransform();
+
+			if (bAverageCalculation)
+			{
+				if (SavedLocation.Num() <  AverageNumber)
+				{
+					SavedLocation.Init(SourceTM.GetLocation(),AverageNumber);
+					SavedLocation_Other.Init(OtherSourceTM.GetLocation(),AverageNumber);
+				}
+				else
+				{
+					SavedLocation[CurrAvgLocIndex] = SourceTM.GetLocation();
+					SavedLocation_Other[CurrAvgLocIndex] = OtherSourceTM.GetLocation();
+					CurrAvgLocIndex = (CurrAvgLocIndex + 1) % AverageNumber;
+				}
+				FVector AvgLoc = UKismetMathLibrary::GetVectorArrayAverage(SavedLocation);
+				SourceTM.SetLocation(AvgLoc);
+				AvgLoc = UKismetMathLibrary::GetVectorArrayAverage(SavedLocation_Other);
+				OtherSourceTM.SetLocation(AvgLoc);
+			}
+
+			
 			int32 DirScaleByPriority = 1;
 			if (OtherGrabTargetComponent->DirectionPriority > DirectionPriority)
 			{
@@ -164,6 +185,7 @@ void UIF_GrabTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			FTransform TargetActorTransform =  OwnerTransform.GetRelativeTransform(GetComponentTransform());
 			FTransform FixedGrabSourceTransform = GrabSourceComponent->GetComponentTransform();
 			FTransform TargetTransform = TargetActorTransform * FixedGrabSourceTransform;
+	
 			TargetTransform.SetRotation(TargetRot.Quaternion());
 			if (bSmoothGrab)
 			{
@@ -477,7 +499,7 @@ void UIF_GrabTargetComponent::PreGrabAsMainHand(UIF_GrabSourceComponent* SourceC
 		CurrRotationGrabSpeed = StartGrabRotationSpeed;
 		CurrGrabSpeed = GrabSpeedFar;
 	}
-	
+	ResetAverageCalculation();
 }
 
 void UIF_GrabTargetComponent::PreGrabAsSecondHand(UIF_GrabSourceComponent* SourceComponent)
@@ -485,11 +507,19 @@ void UIF_GrabTargetComponent::PreGrabAsSecondHand(UIF_GrabSourceComponent* Sourc
 	GrabSourceComponent = SourceComponent;
 	GrabStat = EIF_GrabStat::Secondary;
 	CallGrabFinished();
+	ResetAverageCalculation();
 }
 
 bool UIF_GrabTargetComponent::HasGrabAnything()
 {
 	return GrabStat == EIF_GrabStat::Main || GrabStat == EIF_GrabStat::Secondary;
+}
+
+void UIF_GrabTargetComponent::ResetAverageCalculation()
+{
+	SavedLocation_Other.Empty();
+	SavedLocation.Empty();
+	CurrAvgLocIndex = 0;
 }
 
 

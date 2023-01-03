@@ -65,6 +65,8 @@ public:
 	{
 		return HandType;
 	}
+	UFUNCTION(BlueprintCallable)
+	void ResetAverageCalculation();
 	
 protected:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
@@ -143,6 +145,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Config|Smooth Grab|Rotation", meta=(EditCondition = "bSmoothGrab"))
 	float GrabRotationTolerance = 0.1f;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config)
+	bool bAverageCalculation = true;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Config, meta=(EditCondition = "bAverageCalculation"))
+	int32 AverageNumber = 10;
+
+
 	
 	//开始抓取的时候的抓取旋转速度
 	UPROPERTY(BlueprintReadWrite)
@@ -159,4 +167,10 @@ protected:
 	bool bTransitionIsNear = false;
 	UPROPERTY(BlueprintReadWrite)
 	bool bRotationIsNear = false;
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FVector> SavedLocation;
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FVector> SavedLocation_Other;
+	UPROPERTY(BlueprintReadOnly)
+	int32 CurrAvgLocIndex = 0;
 };
