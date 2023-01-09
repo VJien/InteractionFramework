@@ -70,7 +70,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf = "WorldContext", HidePin = "WorldContext"))
-	static void CalcHitDirection(FVector HitPoint, FVector Origin, FVector Forward,  FVector Right, EIF_Direction& Direction);
+	static void CalcHitDirection(FVector HitPoint, FVector Origin, FVector Forward,  FVector Right, EIF_Direction& Direction, bool bOnly4Direction = true);
 
 };
 
