@@ -9,7 +9,7 @@
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UIF_HandAnimPoseInterface : public UInterface
+class UIF_HandPoseInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -17,7 +17,7 @@ class UIF_HandAnimPoseInterface : public UInterface
 /**
  * 
  */
-class INTERACTIONFRAMEWORK_API IIF_HandAnimPoseInterface
+class INTERACTIONFRAMEWORK_API IIF_HandPoseInterface
 {
 	GENERATED_BODY()
 

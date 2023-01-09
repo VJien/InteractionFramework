@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class INTERACTIONFRAMEWORK_API UIF_HandAnimInstance : public UAnimInstance, public IIF_HandAnimPoseInterface
+class INTERACTIONFRAMEWORK_API UIF_HandAnimInstance : public UAnimInstance, public IIF_HandPoseInterface
 {
 	GENERATED_BODY()
 protected:

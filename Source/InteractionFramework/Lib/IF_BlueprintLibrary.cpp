@@ -148,95 +148,61 @@ EIF_VRInputType UIF_BlueprintLibrary::StringToInputType(FString String)
 }
 
 void UIF_BlueprintLibrary::CalcHitDirection( FVector HitPoint, FVector Origin, FVector Forward, FVector Right,
-	EIF_Direction& Direction,bool bOnly4Direction)
+	EIF_Direction& Direction)
 {
 	const FVector HitDir = (HitPoint - Origin).GetSafeNormal();
 	float DotFwd = Forward | HitDir;
 	float DotRt = Right | HitDir;
 	float DegFwd = UKismetMathLibrary::DegAcos(DotFwd);
-	if (bOnly4Direction)
+	float DegRt = UKismetMathLibrary::DegAcos(DotRt);
+	int32 Fwd = FMath::RoundToInt(DegFwd / (45.f / 2));
+	
+	if (DotRt > 0)
 	{
-		if (DotRt > 0)
+		if (Fwd<=1)
 		{
-			if (DegFwd<=45)
-			{
-				Direction = EIF_Direction::Front;
-			}
-			else if (DegFwd<=135 && DegFwd>45)
-			{
-				Direction = EIF_Direction::Right;
-			}
-			else
-			{
-				Direction = EIF_Direction::Back;
-			}
+			Direction = EIF_Direction::Front;
+		}
+		else if (Fwd<=3 && Fwd>1)
+		{
+			Direction = EIF_Direction::FrontRight;
+		}
+		else if (Fwd <=5 && Fwd>3)
+		{
+			Direction = EIF_Direction::Right;
+		}
+		else if (Fwd <=3 && Fwd>5)
+		{
+			Direction = EIF_Direction::BackRight;
 		}
 		else
 		{
-			if (DegFwd<=45)
-			{
-				Direction = EIF_Direction::Front;
-			}
-			else if (DegFwd<=135 && DegFwd>45)
-			{
-				Direction = EIF_Direction::Left;
-			}
-			else
-			{
-				Direction = EIF_Direction::Back;
-			}
+			Direction = EIF_Direction::Back;
 		}
 	}
 	else
 	{
-		if (DotRt > 0)
+		if (Fwd<=1)
 		{
-			if (DegFwd<=22.5)
-			{
-				Direction = EIF_Direction::Front;
-			}
-			else if (DegFwd<=22.5*3 && DegFwd>22.5)
-			{
-				Direction = EIF_Direction::FrontRight;
-			}
-			else if (DegFwd <= 22.5*5 && DegFwd> 22.5*3)
-			{
-				Direction = EIF_Direction::Right;
-			}
-			else if (DegFwd <= 22.5*7 && DegFwd>22.5*5)
-			{
-				Direction = EIF_Direction::BackRight;
-			}
-			else
-			{
-				Direction = EIF_Direction::Back;
-			}
+			Direction = EIF_Direction::Front;
+		}
+		else if (Fwd<=3 && Fwd>1)
+		{
+			Direction = EIF_Direction::FrontLeft;
+		}
+		else if (Fwd <=5 && Fwd>3)
+		{
+			Direction = EIF_Direction::Left;
+		}
+		else if (Fwd <=3 && Fwd>5)
+		{
+			Direction = EIF_Direction::BackLeft;
 		}
 		else
 		{
-			if (DegFwd<=22.5)
-			{
-				Direction = EIF_Direction::Front;
-			}
-			else if (DegFwd<=22.5*3 && DegFwd>22.5)
-			{
-				Direction = EIF_Direction::FrontLeft;
-			}
-			else if (DegFwd <=22.5*5 && DegFwd>22.5*3)
-			{
-				Direction = EIF_Direction::Left;
-			}
-			else if (DegFwd <=22.5*7 && DegFwd>22.5*5)
-			{
-				Direction = EIF_Direction::BackLeft;
-			}
-			else
-			{
-				Direction = EIF_Direction::Back;
-			}
+			Direction = EIF_Direction::Back;
 		}
 	}
-	
 	
 }
 
